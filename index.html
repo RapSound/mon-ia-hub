@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OpenSource AI Hub — Pro</title>
+<title>Nexus Orchestrator — Multi-AI Hub</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -29,6 +29,8 @@
   .dot { width:6px; height:6px; border-radius:50%; background:#64748b; animation: bounce 1.2s infinite; }
   .dot:nth-child(2) { animation-delay:.15s; }
   .dot:nth-child(3) { animation-delay:.3s; }
+  @keyframes glowPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,211,238,.4); } 50% { box-shadow: 0 0 24px 4px rgba(34,211,238,.15); } }
+  .glow-pulse { animation: glowPulse 2.4s infinite; }
 
   .view { display: none; }
   .view.active { display: flex; }
@@ -65,6 +67,41 @@
 
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.65); backdrop-filter: blur(4px); z-index: 90; display: none; }
   .modal-backdrop.show { display: flex; align-items: center; justify-content: center; padding: 16px; }
+
+  /* Task cards in orchestrator */
+  .task-card {
+    border-radius: 14px;
+    border: 1px solid #1e293b;
+    background: rgba(15,23,42,.5);
+    padding: 12px 14px;
+    transition: all .2s;
+  }
+  .task-card.running { border-color: rgba(6,182,212,.5); background: rgba(6,182,212,.06); }
+  .task-card.done { border-color: rgba(52,211,153,.4); }
+  .task-card.error { border-color: rgba(248,113,113,.5); background: rgba(248,113,113,.05); }
+
+  .pipeline-step {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 8px;
+    font-size: 11.5px; font-weight: 500;
+    background: rgba(15,23,42,.7);
+    border: 1px solid #1e293b;
+  }
+  .pipeline-step.active { border-color: rgba(6,182,212,.6); background: rgba(6,182,212,.08); color: #67e8f9; }
+  .pipeline-step.done { border-color: rgba(52,211,153,.4); color: #6ee7b7; }
+
+  .toggle { position: relative; width: 42px; height: 24px; border-radius: 12px; background: #1e293b; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #64748b; transition: all .2s; }
+  .toggle.on { background: linear-gradient(90deg, #0891b2, #4f46e5); }
+  .toggle.on::after { left: 21px; background: #fff; }
+
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; letter-spacing: .03em; }
+  .badge-cyan { background: rgba(6,182,212,.15); color: #67e8f9; }
+  .badge-violet { background: rgba(139,92,246,.15); color: #c4b5fd; }
+  .badge-pink { background: rgba(236,72,153,.15); color: #f9a8d4; }
+  .badge-amber { background: rgba(245,158,11,.15); color: #fcd34d; }
+  .badge-emerald { background: rgba(52,211,153,.15); color: #6ee7b7; }
+  .badge-rose { background: rgba(244,63,94,.15); color: #fda4af; }
 </style>
 </head>
 <body class="bg-[#07090e] text-slate-100 h-full flex overflow-hidden">
@@ -72,20 +109,20 @@
 <!-- ==================== SIDEBAR ==================== -->
 <aside class="w-16 md:w-56 flex-shrink-0 glass border-r border-slate-800/80 flex flex-col z-30">
   <div class="p-3 md:p-4 flex items-center gap-3 border-b border-slate-800/60">
-    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-white/20 flex-shrink-0">
-      <span class="text-white font-bold text-lg">⚡</span>
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-white/20 flex-shrink-0 glow-pulse">
+      <span class="text-white font-bold text-lg">✦</span>
     </div>
     <div class="hidden md:block min-w-0">
-      <h1 class="text-sm font-bold bg-gradient-to-r from-white via-cyan-200 to-indigo-400 bg-clip-text text-transparent whitespace-nowrap">OpenSource AI</h1>
+      <h1 class="text-sm font-bold bg-gradient-to-r from-white via-cyan-200 to-indigo-400 bg-clip-text text-transparent whitespace-nowrap">Nexus Orchestrator</h1>
       <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>100% gratuit
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Multi-IA gratuit
       </p>
     </div>
   </div>
 
   <nav class="flex-1 p-2 md:p-3 space-y-1 overflow-y-auto">
     <button class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="chat">
-      <span class="text-base">💬</span><span class="hidden md:inline">Chat</span>
+      <span class="text-base">🧠</span><span class="hidden md:inline">Orchestrateur</span>
     </button>
     <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="image">
       <span class="text-base">🎨</span><span class="hidden md:inline">Image</span>
@@ -102,14 +139,14 @@
   </nav>
 
   <div class="hidden md:block p-4 border-t border-slate-800/60 text-[11px] text-slate-500 leading-relaxed">
-    Aucune clé API.<br>Modèles open source gratuits.
+    1 requête →<br>N sous-tâches →<br>1 réponse finale
   </div>
 </aside>
 
 <!-- ==================== MAIN ==================== -->
 <main class="flex-1 flex flex-col min-w-0 min-h-0">
 
-  <!-- ============ CHAT VIEW ============ -->
+  <!-- ============ CHAT / ORCHESTRATOR ============ -->
   <section id="view-chat" class="view active flex-1 flex-col min-h-0">
     <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-2 flex-wrap">
       <button id="new-chat-btn" class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition">
@@ -119,9 +156,15 @@
         <span>📚</span><span class="hidden sm:inline">Historique</span>
       </button>
       <div class="flex-1"></div>
+
+      <!-- Orchestrator toggle -->
+      <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2">
+        <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Auto</span>
+        <div id="orch-toggle" class="toggle on" title="Mode orchestrateur : l'IA choisit les tâches"></div>
+      </div>
       <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2">
         <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Modèle</span>
-        <select id="chat-model" class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer max-w-[180px]"></select>
+        <select id="chat-model" class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer max-w-[170px]"></select>
       </div>
     </header>
 
@@ -133,19 +176,19 @@
         <div class="flex items-end gap-2 bg-slate-900/90 border border-slate-700/60 rounded-2xl p-2 shadow-2xl focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-500/20 transition">
           <button id="attach-btn" title="Joindre une image" class="p-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition text-base flex-shrink-0">📎</button>
           <input type="file" id="file-input" accept="image/*" class="hidden">
-          <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none resize-none py-2.5 px-2 text-sm max-h-40 min-w-0" placeholder="Écrivez votre message... (Entrée = envoyer)"></textarea>
+          <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none resize-none py-2.5 px-2 text-sm max-h-40 min-w-0" placeholder="Décris ce que tu veux. L'orchestrateur choisira les IA (texte, image, vidéo...)..."></textarea>
           <button onclick="sendMessage()" id="send-btn" class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold px-4 sm:px-5 py-2.5 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-95 disabled:opacity-50 flex-shrink-0">
             Envoyer
           </button>
         </div>
         <div class="text-[10.5px] text-slate-500 text-center mt-2">
-          Streaming en direct · Sauvegarde locale · Fallback automatique
+          Mode Auto : 1 prompt → plan multi-tâches → exécution parallèle → synthèse finale
         </div>
       </div>
     </footer>
   </section>
 
-  <!-- ============ IMAGE VIEW ============ -->
+  <!-- ============ IMAGE ============ -->
   <section id="view-image" class="view flex-1 flex-col min-h-0">
     <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3 flex-wrap">
       <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎨</span> Générateur d'images</h2>
@@ -154,7 +197,6 @@
     </header>
 
     <div class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-      <!-- Controls -->
       <div class="w-full lg:w-80 flex-shrink-0 border-b lg:border-b-0 lg:border-r border-slate-800/80 overflow-y-auto p-4 space-y-4 max-h-[45vh] lg:max-h-none">
         <div class="field">
           <label>Prompt</label>
@@ -165,17 +207,11 @@
           <select id="img-model" class="input"></select>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div class="field">
-            <label>Largeur</label>
-            <select id="img-w" class="input">
-              <option>512</option><option>768</option><option selected>1024</option><option>1280</option><option>1536</option>
-            </select>
+          <div class="field"><label>Largeur</label>
+            <select id="img-w" class="input"><option>512</option><option>768</option><option selected>1024</option><option>1280</option><option>1536</option></select>
           </div>
-          <div class="field">
-            <label>Hauteur</label>
-            <select id="img-h" class="input">
-              <option>512</option><option>768</option><option selected>1024</option><option>1280</option><option>1536</option>
-            </select>
+          <div class="field"><label>Hauteur</label>
+            <select id="img-h" class="input"><option>512</option><option>768</option><option selected>1024</option><option>1280</option><option>1536</option></select>
           </div>
         </div>
         <div class="field">
@@ -193,11 +229,11 @@
           <div class="flex flex-wrap gap-1.5" id="style-chips">
             <span class="chip active" data-style="">Aucun</span>
             <span class="chip" data-style=", photographie réaliste, 8k, éclairage cinématographique">📷 Réaliste</span>
-            <span class="chip" data-style=", illustration numérique, art conceptuel, couleurs vibrantes">🎨 Digital</span>
-            <span class="chip" data-style=", anime japonais, studio ghibli, cell shading">🌸 Anime</span>
-            <span class="chip" data-style=", peinture à l'huile, style renaissance, texture de toile">🖼️ Peinture</span>
-            <span class="chip" data-style=", rendu 3D, blender, octane render, ultra détaillé">🧊 3D</span>
-            <span class="chip" data-style=", pixel art, 16 bits, rétro gaming">👾 Pixel</span>
+            <span class="chip" data-style=", illustration numérique, art conceptuel">🎨 Digital</span>
+            <span class="chip" data-style=", anime japonais, studio ghibli">🌸 Anime</span>
+            <span class="chip" data-style=", peinture à l'huile, renaissance">🖼️ Peinture</span>
+            <span class="chip" data-style=", rendu 3D, blender, octane render">🧊 3D</span>
+            <span class="chip" data-style=", pixel art, 16 bits">👾 Pixel</span>
           </div>
         </div>
         <div class="field">
@@ -209,7 +245,6 @@
         </button>
       </div>
 
-      <!-- Preview -->
       <div class="flex-1 overflow-y-auto p-4 min-w-0">
         <div id="img-stage" class="min-h-[340px] rounded-2xl border border-dashed border-slate-700/80 flex items-center justify-center p-4 bg-gradient-to-b from-cyan-500/[.04] to-transparent relative overflow-hidden">
           <div class="text-center text-slate-500 text-sm leading-relaxed">
@@ -218,7 +253,6 @@
             <span class="text-xs">Gratuit · Illimité · Sans inscription</span>
           </div>
         </div>
-
         <div id="img-gallery-wrap" class="hidden mt-6">
           <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Galerie de la session</h3>
           <div id="img-gallery" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2"></div>
@@ -227,7 +261,7 @@
     </div>
   </section>
 
-  <!-- ============ VIDEO VIEW ============ -->
+  <!-- ============ VIDEO ============ -->
   <section id="view-video" class="view flex-1 flex-col min-h-0">
     <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3 flex-wrap">
       <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎬</span> Générateur de vidéo</h2>
@@ -246,31 +280,19 @@
           <select id="vid-model" class="input"></select>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div class="field">
-            <label>Images</label>
-            <select id="vid-frames" class="input">
-              <option>6</option><option selected>10</option><option>14</option><option>20</option>
-            </select>
+          <div class="field"><label>Images</label>
+            <select id="vid-frames" class="input"><option>6</option><option selected>10</option><option>14</option><option>20</option></select>
           </div>
-          <div class="field">
-            <label>Durée (s)</label>
-            <select id="vid-duration" class="input">
-              <option>2</option><option selected>3</option><option>4</option><option>6</option>
-            </select>
+          <div class="field"><label>Durée (s)</label>
+            <select id="vid-duration" class="input"><option>2</option><option selected>3</option><option>4</option><option>6</option></select>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div class="field">
-            <label>Largeur</label>
-            <select id="vid-w" class="input">
-              <option>512</option><option selected>768</option><option>1024</option>
-            </select>
+          <div class="field"><label>Largeur</label>
+            <select id="vid-w" class="input"><option>512</option><option selected>768</option><option>1024</option></select>
           </div>
-          <div class="field">
-            <label>Hauteur</label>
-            <select id="vid-h" class="input">
-              <option>512</option><option selected>768</option><option>1024</option>
-            </select>
+          <div class="field"><label>Hauteur</label>
+            <select id="vid-h" class="input"><option>512</option><option selected>768</option><option>1024</option></select>
           </div>
         </div>
         <div class="field">
@@ -285,7 +307,7 @@
           🎬 Générer la vidéo
         </button>
         <p class="text-[11px] text-slate-500 leading-relaxed">
-          Génère plusieurs images puis les anime et les encode en WebM directement dans ton navigateur.
+          Génère plusieurs images puis les anime et les encode en WebM dans ton navigateur.
         </p>
       </div>
 
@@ -301,7 +323,7 @@
     </div>
   </section>
 
-  <!-- ============ VOICE VIEW ============ -->
+  <!-- ============ VOICE ============ -->
   <section id="view-voice" class="view flex-1 flex-col min-h-0">
     <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3">
       <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎙️</span> Voix</h2>
@@ -310,8 +332,6 @@
 
     <div class="flex-1 overflow-y-auto p-4 sm:p-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-5xl mx-auto">
-
-        <!-- STT -->
         <div class="glass border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
           <div>
             <h3 class="text-sm font-bold text-white flex items-center gap-2">🎙️ Reconnaissance vocale</h3>
@@ -324,76 +344,75 @@
           </button>
         </div>
 
-        <!-- TTS -->
         <div class="glass border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
           <div>
             <h3 class="text-sm font-bold text-white flex items-center gap-2">🔊 Synthèse vocale</h3>
             <p class="text-xs text-slate-400 mt-1 leading-relaxed">Fais lire n'importe quel texte à voix haute.</p>
           </div>
           <textarea id="tts-text" rows="4" class="input resize-none" placeholder="Texte à lire…"></textarea>
-          <div class="field">
-            <label>Voix</label>
-            <select id="tts-voice" class="input"></select>
-          </div>
+          <div class="field"><label>Voix</label><select id="tts-voice" class="input"></select></div>
           <div class="grid grid-cols-2 gap-2">
-            <div class="field">
-              <label>Vitesse</label>
-              <input type="number" id="tts-rate" value="1" min="0.5" max="2" step="0.1" class="input">
-            </div>
-            <div class="field">
-              <label>Tonalité</label>
-              <input type="number" id="tts-pitch" value="1" min="0" max="2" step="0.1" class="input">
-            </div>
+            <div class="field"><label>Vitesse</label><input type="number" id="tts-rate" value="1" min="0.5" max="2" step="0.1" class="input"></div>
+            <div class="field"><label>Tonalité</label><input type="number" id="tts-pitch" value="1" min="0" max="2" step="0.1" class="input"></div>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <button id="tts-speak" class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-2.5 rounded-xl transition text-sm shadow-lg shadow-cyan-600/30">▶️ Lire</button>
             <button id="tts-stop" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-medium py-2.5 rounded-xl transition text-sm">⏹️ Stop</button>
           </div>
         </div>
-
       </div>
     </div>
   </section>
 
-  <!-- ============ SETTINGS VIEW ============ -->
+  <!-- ============ SETTINGS ============ -->
   <section id="view-settings" class="view flex-1 flex-col min-h-0">
     <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3">
       <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>⚙️</span> Paramètres</h2>
     </header>
     <div class="flex-1 overflow-y-auto p-4 sm:p-6">
       <div class="max-w-2xl mx-auto space-y-4">
+        <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-4">
+          <h3 class="text-sm font-bold text-white">Orchestrateur</h3>
+          <div class="field">
+            <label>Modèle du planificateur (doit renvoyer du JSON)</label>
+            <select id="set-orch-model" class="input"></select>
+          </div>
+          <div class="field">
+            <label>Modèle de synthèse finale</label>
+            <select id="set-synth-model" class="input"></select>
+          </div>
+          <div class="field">
+            <label>Max sous-tâches par requête</label>
+            <input type="number" id="set-max-tasks" value="4" min="1" max="6" class="input">
+          </div>
+        </div>
 
         <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-4">
-          <h3 class="text-sm font-bold text-white">Comportement par défaut</h3>
-          <div class="field">
-            <label>Modèle de chat par défaut</label>
-            <select id="set-text-model" class="input"></select>
-          </div>
-          <div class="field">
-            <label>Modèle d'image par défaut</label>
-            <select id="set-image-model" class="input"></select>
-          </div>
+          <h3 class="text-sm font-bold text-white">Défauts</h3>
+          <div class="field"><label>Modèle de chat par défaut</label><select id="set-text-model" class="input"></select></div>
+          <div class="field"><label>Modèle d'image par défaut</label><select id="set-image-model" class="input"></select></div>
           <div class="field">
             <label>Prompt système</label>
-            <textarea id="set-system" rows="3" class="input resize-none" placeholder="Tu es un assistant IA utile, précis et concis."></textarea>
+            <textarea id="set-system" rows="3" class="input resize-none" placeholder="Tu es un assistant IA utile…"></textarea>
           </div>
         </div>
 
         <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-3">
           <h3 class="text-sm font-bold text-white">Données</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">Tes conversations sont stockées localement dans ton navigateur. Rien n'est envoyé à un serveur.</p>
+          <p class="text-xs text-slate-400 leading-relaxed">Conversations stockées localement. Rien n'est envoyé à un serveur tiers.</p>
           <div class="flex gap-2">
-            <button id="export-btn" class="flex-1 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium py-2.5 rounded-xl transition">⬇️ Exporter les conversations</button>
+            <button id="export-btn" class="flex-1 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium py-2.5 rounded-xl transition">⬇️ Exporter</button>
             <button id="clear-all-btn" class="flex-1 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-200 text-xs font-medium py-2.5 rounded-xl transition">🗑️ Tout effacer</button>
           </div>
         </div>
 
         <div class="glass border border-slate-800/80 rounded-2xl p-5 text-xs text-slate-400 leading-relaxed space-y-2">
-          <p class="font-bold text-slate-300">ℹ️ À propos</p>
-          <p>OpenSource AI Hub — interface entièrement gratuite, sans clé API, utilisant les API publiques de Pollinations AI et les Web APIs du navigateur (SpeechRecognition, SpeechSynthesis, MediaRecorder).</p>
-          <p>Les modèles cloud sont hébergés par des serveurs publics. Pour un usage intensif, privilégie des heures creuses.</p>
+          <p class="font-bold text-slate-300">💡 Comment fonctionne l'orchestrateur ?</p>
+          <p><b>1.</b> Ton prompt est envoyé à un <b>planificateur</b> qui analyse l'intention.</p>
+          <p><b>2.</b> Il produit un plan JSON listant des sous-tâches (<span class="badge badge-cyan">texte</span> <span class="badge badge-pink">image</span> <span class="badge badge-violet">vidéo</span> <span class="badge badge-amber">code</span>).</p>
+          <p><b>3.</b> Les sous-tâches s'exécutent en <b>parallèle</b> sur les meilleurs modèles pour chaque type.</p>
+          <p><b>4.</b> Un <b>synthétiseur</b> combine tous les résultats en une réponse finale cohérente.</p>
         </div>
-
       </div>
     </div>
   </section>
@@ -404,10 +423,16 @@
 <div id="history-modal" class="modal-backdrop">
   <div class="glass border border-slate-700/80 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in">
     <div class="flex items-center justify-between p-4 border-b border-slate-800/80">
-      <h3 class="text-sm font-bold text-white">📚 Historique des conversations</h3>
+      <h3 class="text-sm font-bold text-white">📚 Historique</h3>
       <button onclick="closeHistory()" class="text-slate-400 hover:text-white text-xl px-2 leading-none">×</button>
     </div>
     <div id="history-list" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+  </div>
+</div>
+
+<div id="lightbox" class="modal-backdrop">
+  <div class="max-w-4xl max-h-[90vh] flex items-center justify-center">
+    <img id="lightbox-img" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl" />
   </div>
 </div>
 
@@ -416,21 +441,21 @@
 <!-- ==================== SCRIPT ==================== -->
 <script>
 /* ============================================================
-   CONSTANTES — modèles gratuits
+   CONSTANTES
    ============================================================ */
 const TEXT_MODELS = [
-  { id:'openai',        name:'GPT-4o mini (OpenAI)' },
-  { id:'openai-fast',   name:'OpenAI Fast ⚡' },
-  { id:'openai-large',  name:'OpenAI Large 🧠' },
-  { id:'mistral',       name:'Mistral 7B 🇪🇺' },
-  { id:'llama',         name:'Llama 3' },
-  { id:'qwen-coder',    name:'Qwen Coder 💻' },
-  { id:'deepseek',      name:'DeepSeek R1' },
-  { id:'deepseek-r1',   name:'DeepSeek Reasoning' },
-  { id:'phi',           name:'Phi-4' },
-  { id:'gemini',        name:'Gemini 2.0 Flash' },
-  { id:'gemini-fast',   name:'Gemini Flash ⚡' },
-  { id:'nova-fast',     name:'Nova Fast' },
+  { id:'openai',        name:'GPT-4o mini', tag:'general' },
+  { id:'openai-fast',   name:'OpenAI Fast ⚡', tag:'fast' },
+  { id:'openai-large',  name:'OpenAI Large 🧠', tag:'reasoning' },
+  { id:'mistral',       name:'Mistral 7B 🇪🇺', tag:'general' },
+  { id:'llama',         name:'Llama 3', tag:'general' },
+  { id:'qwen-coder',    name:'Qwen Coder 💻', tag:'code' },
+  { id:'deepseek',      name:'DeepSeek R1', tag:'reasoning' },
+  { id:'deepseek-r1',   name:'DeepSeek Reasoning', tag:'reasoning' },
+  { id:'phi',           name:'Phi-4', tag:'reasoning' },
+  { id:'gemini',        name:'Gemini 2.0 Flash', tag:'general' },
+  { id:'gemini-fast',   name:'Gemini Flash ⚡', tag:'fast' },
+  { id:'nova-fast',     name:'Nova Fast', tag:'fast' },
 ];
 
 const IMAGE_MODELS = [
@@ -442,7 +467,7 @@ const IMAGE_MODELS = [
   { id:'flux-3d',      name:'FLUX 3D 🧊' },
 ];
 
-const STORAGE_KEY = 'opensource_ai_hub_v2';
+const STORAGE_KEY = 'nexus_orchestrator_v3';
 
 /* ============================================================
    STATE
@@ -456,10 +481,14 @@ const state = {
   lastImage: null,
   lastVideoBlob: null,
   motion: 1,
-  attachment: null, // {dataUrl, name}
+  attachment: null,
+  orchestrator: true,
   settings: {
     textModel: 'openai',
     imageModel: 'flux',
+    orchModel: 'openai-fast',
+    synthModel: 'openai',
+    maxTasks: 4,
     systemPrompt: "Tu es un assistant IA utile, précis et concis. Réponds en français par défaut. Utilise du markdown quand c'est pertinent."
   }
 };
@@ -493,37 +522,38 @@ function escapeHTML(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function uid(){
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 
 function renderMarkdown(text){
   let h = escapeHTML(text);
-
   h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
     `<pre><code>${code.replace(/\n$/,'')}</code></pre>`);
-
   h = h.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
-
   h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   h = h.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
   h = h.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
-
   h = h.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
   h = h.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
-
   h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
     '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
   h = h.replace(/^\s*[-*] (.+)$/gm, '<li>$1</li>');
   h = h.replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, '<ul>$1</ul>');
-
   h = h.split(/\n{2,}/).map(block => {
     if (/^\s*<(ul|ol|pre|h[1-3]|li)/.test(block)) return block;
     return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
   }).join('');
-
   return h;
+}
+
+function extractJSON(text){
+  // Enlève les ```json ... ``` si présents
+  let t = text.trim();
+  t = t.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+  // Trouve le premier { et le dernier }
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('Pas de JSON trouvé');
+  return JSON.parse(t.slice(start, end + 1));
 }
 
 /* ============================================================
@@ -534,7 +564,8 @@ function saveState(){
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       conversations: state.conversations,
       currentId: state.currentId,
-      settings: state.settings
+      settings: state.settings,
+      orchestrator: state.orchestrator
     }));
   } catch(e){ console.warn('save failed', e); }
 }
@@ -547,13 +578,14 @@ function loadState(){
     if (Array.isArray(data.conversations)) state.conversations = data.conversations;
     if (data.currentId) state.currentId = data.currentId;
     if (data.settings) state.settings = { ...state.settings, ...data.settings };
+    if (typeof data.orchestrator === 'boolean') state.orchestrator = data.orchestrator;
   } catch(e){ console.warn('load failed', e); }
 }
 
 /* ============================================================
    NAVIGATION
    ============================================================ */
-$$('#nav .nav-item, aside .nav-item').forEach(item => {
+$$('.nav-item').forEach(item => {
   item.addEventListener('click', () => switchView(item.dataset.view));
 });
 
@@ -566,24 +598,56 @@ function switchView(name){
 }
 
 /* ============================================================
-   CHAT — GESTION DES CONVERSATIONS
+   IMAGE / VIDEO — chargement robuste via fetch + blob
+   ============================================================ */
+async function fetchImageBlob(url, timeoutMs = 45000){
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal, mode: 'cors' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    if (!blob.type.startsWith('image/')) throw new Error('Réponse non-image');
+    return blob;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function fetchImageBlobWithRetry(url, retries = 2){
+  let lastErr;
+  for (let i = 0; i <= retries; i++){
+    try {
+      return await fetchImageBlob(url);
+    } catch(e){
+      lastErr = e;
+      console.warn(`Tentative ${i+1} échouée:`, e.message);
+      if (i < retries) await new Promise(r => setTimeout(r, 800 * (i + 1)));
+    }
+  }
+  throw lastErr;
+}
+
+function buildImageURL(prompt, { width, height, seed, model }){
+  const p = encodeURIComponent(prompt);
+  const s = seed ?? Math.floor(Math.random() * 1e9);
+  return `https://image.pollinations.ai/prompt/${p}?width=${width}&height=${height}&seed=${s}&model=${model}&nologo=true&referrer=nexus-orchestrator`;
+}
+
+function blobToObjectURL(blob){ return URL.createObjectURL(blob); }
+
+/* ============================================================
+   CONVERSATIONS
    ============================================================ */
 function newConversation(){
-  const conv = {
-    id: uid(),
-    title: 'Nouvelle conversation',
-    messages: [],
-    createdAt: Date.now()
-  };
+  const conv = { id: uid(), title: 'Nouvelle conversation', messages: [], createdAt: Date.now() };
   state.conversations.unshift(conv);
   state.currentId = conv.id;
   saveState();
   renderChat();
 }
 
-function getCurrent(){
-  return state.conversations.find(c => c.id === state.currentId);
-}
+function getCurrent(){ return state.conversations.find(c => c.id === state.currentId); }
 
 function selectConversation(id){
   state.currentId = id;
@@ -595,9 +659,7 @@ function selectConversation(id){
 function deleteConversation(id, ev){
   ev && ev.stopPropagation();
   state.conversations = state.conversations.filter(c => c.id !== id);
-  if (state.currentId === id){
-    state.currentId = state.conversations[0]?.id || null;
-  }
+  if (state.currentId === id) state.currentId = state.conversations[0]?.id || null;
   if (!state.currentId) newConversation();
   else { saveState(); renderChat(); renderHistoryList(); }
 }
@@ -606,7 +668,7 @@ function renderHistoryList(){
   const list = $('#history-list');
   if (!list) return;
   if (!state.conversations.length){
-    list.innerHTML = `<div class="text-center text-slate-500 text-sm py-8">Aucune conversation enregistrée.</div>`;
+    list.innerHTML = `<div class="text-center text-slate-500 text-sm py-8">Aucune conversation.</div>`;
     return;
   }
   list.innerHTML = '';
@@ -619,24 +681,18 @@ function renderHistoryList(){
         <div class="text-sm text-slate-200 font-medium truncate">${escapeHTML(c.title)}</div>
         <div class="text-[11px] text-slate-500 mt-0.5">${date} · ${c.messages.length} messages</div>
       </div>
-      <button class="text-slate-500 hover:text-rose-400 text-lg px-2 opacity-0 group-hover:opacity-100 transition" title="Supprimer">×</button>
-    `;
+      <button class="text-slate-500 hover:text-rose-400 text-lg px-2 opacity-0 group-hover:opacity-100 transition" title="Supprimer">×</button>`;
     el.addEventListener('click', () => selectConversation(c.id));
     el.querySelector('button').addEventListener('click', e => deleteConversation(c.id, e));
     list.appendChild(el);
   });
 }
 
-function openHistory(){
-  renderHistoryList();
-  $('#history-modal').classList.add('show');
-}
-function closeHistory(){
-  $('#history-modal').classList.remove('show');
-}
+function openHistory(){ renderHistoryList(); $('#history-modal').classList.add('show'); }
+function closeHistory(){ $('#history-modal').classList.remove('show'); }
 
 /* ============================================================
-   CHAT — RENDU DES MESSAGES
+   RENDU CHAT
    ============================================================ */
 function renderChat(){
   const box = $('#chat-messages');
@@ -648,132 +704,170 @@ function renderChat(){
       <div class="glass border border-slate-800/80 p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in max-w-3xl mx-auto">
         <div class="absolute -top-12 -right-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2.5 flex items-center gap-2.5">
-          <span>🚀</span> Hub prêt à l'emploi
+          <span>🧠</span> Orchestrateur multi-IA
         </h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-3">
-          Posez vos questions, demandez du code, des images, des vidéos ou utilisez la voix.
+        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+          Décris ce que tu veux. <b>Un planificateur IA</b> analyse ta demande, choisit les bons modèles, lance plusieurs sous-tâches en parallèle (texte, image, vidéo, code...) puis un synthétiseur combine tout en une réponse finale.
         </p>
-        <ul class="text-slate-400 text-xs space-y-1.5 leading-relaxed">
-          <li>• 💬 <b class="text-slate-300">Chat</b> — streaming en direct, 12 modèles, sauvegarde locale</li>
-          <li>• 🎨 <b class="text-slate-300">Image</b> — FLUX, Turbo, Kontext + galerie</li>
-          <li>• 🎬 <b class="text-slate-300">Vidéo</b> — génération + export WebM</li>
-          <li>• 🎙️ <b class="text-slate-300">Voix</b> — dictée et synthèse vocale</li>
-        </ul>
-        <p class="text-slate-500 text-[11px] mt-4">💡 Astuce : Entrée pour envoyer, Maj+Entrée pour un retour à la ligne.</p>
-      </div>
-    `;
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="badge badge-cyan">💬 Texte</span>
+          <span class="badge badge-pink">🎨 Image</span>
+          <span class="badge badge-violet">🎬 Vidéo</span>
+          <span class="badge badge-amber">💻 Code</span>
+          <span class="badge badge-emerald">🎙️ Voix</span>
+        </div>
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 leading-relaxed">
+          <p class="font-bold text-slate-300 mb-1.5">Exemples :</p>
+          <p>• « Un logo minimaliste de renard pour ma marque, puis décris-le »</p>
+          <p>• « Écris un poème sur l'océan et génère une image associée »</p>
+          <p>• « Compare React et Vue.js et donne-moi un exemple de code pour chacun »</p>
+        </div>
+      </div>`;
     return;
   }
 
-  conv.messages.forEach(m => appendMessageEl(m.role, m.content, m.image));
+  conv.messages.forEach(m => appendMessageEl(m));
   box.scrollTop = box.scrollHeight;
 }
 
-function appendMessageEl(role, content, imageDataUrl){
+function appendMessageEl(msg){
   const box = $('#chat-messages');
   const wrap = document.createElement('div');
 
-  if (role === 'user'){
+  if (msg.role === 'user'){
     wrap.className = 'flex justify-end animate-fade-in';
     let imgHtml = '';
-    if (imageDataUrl){
-      imgHtml = `<img src="${imageDataUrl}" class="rounded-xl max-w-full mb-2 border border-slate-700/60" />`;
+    if (msg.image){
+      imgHtml = `<img src="${msg.image}" class="rounded-xl max-w-full mb-2 border border-slate-700/60 max-h-60 object-cover" />`;
     }
     wrap.innerHTML = `
       <div class="bg-gradient-to-br from-cyan-600 to-indigo-600 text-white px-5 py-3.5 rounded-3xl rounded-tr-sm max-w-2xl shadow-xl text-sm whitespace-pre-wrap leading-relaxed font-medium">
-        ${imgHtml}${escapeHTML(content)}
+        ${imgHtml}${escapeHTML(msg.content)}
       </div>`;
   } else {
     wrap.className = 'flex justify-start animate-fade-in';
-    wrap.innerHTML = `
-      <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed msg-md min-w-0 break-words">
-        <span class="block text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Assistant Hub</span>
-        <div class="content"></div>
-        <div class="actions mt-3 flex gap-1 opacity-0 transition-opacity"></div>
-      </div>`;
-    wrap.querySelector('.content').innerHTML = renderMarkdown(content);
-    const acts = wrap.querySelector('.actions');
+    const inner = document.createElement('div');
+    inner.className = 'glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed min-w-0 break-words w-full';
+
+    // Plan visualizer si présent
+    if (msg.plan && msg.plan.length){
+      const planHtml = msg.plan.map((t, i) => {
+        const icons = { text:'💬', image:'🎨', video:'🎬', code:'💻' };
+        return `<div class="pipeline-step done">
+          <span>${icons[t.type] || '•'}</span>
+          <span class="font-semibold">${t.type}</span>
+          <span class="text-slate-500 truncate">${escapeHTML((t.prompt||'').slice(0,60))}${(t.prompt||'').length>60?'…':''}</span>
+        </div>`;
+      }).join('');
+      inner.innerHTML = `
+        <details class="mb-3" ${msg.showPlan !== false ? 'open' : ''}>
+          <summary class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider cursor-pointer select-none flex items-center gap-1.5">
+            <span>🧠</span> Plan d'exécution · ${msg.plan.length} tâche(s)
+          </summary>
+          <div class="mt-2 space-y-1.5">${planHtml}</div>
+        </details>
+        <div class="content msg-md"></div>
+        <div class="actions mt-3 flex gap-1 opacity-0 transition-opacity"></div>`;
+      box.appendChild(wrap);
+      wrap.appendChild(inner);
+      inner.querySelector('.content').innerHTML = renderMarkdown(msg.content);
+
+      // Rendu des images/vidéos produites
+      if (msg.artifacts && msg.artifacts.length){
+        const art = document.createElement('div');
+        art.className = 'mt-4 space-y-3';
+        msg.artifacts.forEach(a => {
+          if (a.type === 'image'){
+            const div = document.createElement('div');
+            div.className = 'rounded-xl border border-slate-800 bg-slate-950/60 p-2';
+            div.innerHTML = `
+              <div class="flex items-center justify-between mb-1.5 px-1">
+                <span class="badge badge-pink">🎨 Image · ${a.model}</span>
+                <button class="text-[11px] text-slate-400 hover:text-cyan-400">⬇️ Télécharger</button>
+              </div>
+              <img src="${a.url}" class="w-full rounded-lg cursor-zoom-in" />`;
+            div.querySelector('img').addEventListener('click', () => {
+              $('#lightbox-img').src = a.url;
+              $('#lightbox').classList.add('show');
+            });
+            div.querySelector('button').addEventListener('click', () => {
+              const link = document.createElement('a');
+              link.href = a.url;
+              link.download = 'nexus-img-' + Date.now() + '.jpg';
+              link.target = '_blank';
+              link.click();
+            });
+            art.appendChild(div);
+          } else if (a.type === 'video'){
+            const div = document.createElement('div');
+            div.className = 'rounded-xl border border-slate-800 bg-slate-950/60 p-2';
+            div.innerHTML = `
+              <div class="flex items-center justify-between mb-1.5 px-1">
+                <span class="badge badge-violet">🎬 Vidéo · ${a.model}</span>
+                <button class="text-[11px] text-slate-400 hover:text-cyan-400">⬇️ Télécharger</button>
+              </div>
+              <video src="${a.url}" controls autoplay loop class="w-full rounded-lg"></video>`;
+            div.querySelector('button').addEventListener('click', () => {
+              const link = document.createElement('a');
+              link.href = a.url;
+              link.download = 'nexus-video-' + Date.now() + '.webm';
+              link.click();
+            });
+            art.appendChild(div);
+          }
+        });
+        inner.appendChild(art);
+      }
+
+      const acts = inner.querySelector('.actions');
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
+      copyBtn.textContent = '📋 Copier';
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(msg.content);
+        toast('Copié !', 'ok');
+      });
+      acts.appendChild(copyBtn);
+      inner.addEventListener('mouseenter', () => acts.style.opacity = '1');
+      inner.addEventListener('mouseleave', () => acts.style.opacity = '0');
+
+      return;
+    }
+
+    // Message simple
+    inner.innerHTML = `
+      <span class="block text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Assistant</span>
+      <div class="content msg-md"></div>
+      <div class="actions mt-3 flex gap-1 opacity-0 transition-opacity"></div>`;
+    inner.querySelector('.content').innerHTML = renderMarkdown(msg.content);
+    box.appendChild(wrap);
+    wrap.appendChild(inner);
+
+    const acts = inner.querySelector('.actions');
     const copyBtn = document.createElement('button');
     copyBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
     copyBtn.textContent = '📋 Copier';
     copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(content);
+      navigator.clipboard.writeText(msg.content);
       toast('Copié !', 'ok');
     });
     acts.appendChild(copyBtn);
-    wrap.addEventListener('mouseenter', () => acts.style.opacity = '1');
-    wrap.addEventListener('mouseleave', () => acts.style.opacity = '0');
+    inner.addEventListener('mouseenter', () => acts.style.opacity = '1');
+    inner.addEventListener('mouseleave', () => acts.style.opacity = '0');
   }
 
   box.appendChild(wrap);
   box.scrollTop = box.scrollHeight;
-  return wrap;
 }
 
 /* ============================================================
-   CHAT — ENVOI + STREAMING
+   CHAT — STREAM + FALLBACK
    ============================================================ */
-const promptInput = $('#user-input');
-const sendBtn = $('#send-btn');
-
-function autoResize(el){
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
-}
-promptInput.addEventListener('input', () => autoResize(promptInput));
-promptInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
-});
-
-$('#new-chat-btn').addEventListener('click', newConversation);
-$('#history-btn').addEventListener('click', openHistory);
-
-/* Attachment */
-$('#attach-btn').addEventListener('click', () => $('#file-input').click());
-$('#file-input').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (file.size > 4 * 1024 * 1024){ toast('Image trop lourde (max 4 Mo)', 'err'); return; }
-  const reader = new FileReader();
-  reader.onload = ev => {
-    state.attachment = { dataUrl: ev.target.result, name: file.name };
-    renderAttachmentPreview();
-  };
-  reader.readAsDataURL(file);
-  e.target.value = '';
-});
-
-function renderAttachmentPreview(){
-  const box = $('#attachment-preview');
-  if (!state.attachment){
-    box.classList.add('hidden');
-    box.innerHTML = '';
-    return;
-  }
-  box.classList.remove('hidden');
-  box.innerHTML = `
-    <div class="flex items-center gap-3 bg-slate-900/70 border border-slate-800 rounded-xl p-2 max-w-fit">
-      <img src="${state.attachment.dataUrl}" class="w-12 h-12 rounded-lg object-cover border border-slate-700" />
-      <span class="text-xs text-slate-400 max-w-[180px] truncate">${escapeHTML(state.attachment.name)}</span>
-      <button id="remove-attachment" class="text-slate-500 hover:text-rose-400 px-2 text-lg leading-none">×</button>
-    </div>`;
-  $('#remove-attachment').addEventListener('click', () => {
-    state.attachment = null;
-    renderAttachmentPreview();
-  });
-}
-
 async function* streamChat(messages, model){
   const res = await fetch('https://text.pollinations.ai/openai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      messages,
-      stream: true,
-      private: true,
-      referrer: 'opensource-ai-hub'
-    })
+    body: JSON.stringify({ model, messages, stream: true, private: true, referrer: 'nexus-orchestrator' })
   });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   const reader = res.body.getReader();
@@ -799,12 +893,314 @@ async function* streamChat(messages, model){
   }
 }
 
-async function fallbackChat(messages, model){
-  const last = messages[messages.length - 1];
-  const prompt = last?.content || '';
-  const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=${model}`);
+async function askText(messages, model){
+  // Essaie d'abord le streaming puis fallback
+  try {
+    let full = '';
+    for await (const chunk of streamChat(messages, model)) full += chunk;
+    if (full.trim()) return full;
+  } catch(e){
+    console.warn('Streaming échoué, fallback simple', e);
+  }
+  const last = [...messages].reverse().find(m => m.role === 'user');
+  const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(last?.content || '')}?model=${model}`);
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return await res.text();
+}
+
+/* ============================================================
+   ORCHESTRATEUR — PLANIFICATEUR
+   ============================================================ */
+const PLANNER_PROMPT = `Tu es un PLANIFICATEUR d'IA. Analyse la demande de l'utilisateur et produis un plan JSON pour la satisfaire.
+
+Types de tâches disponibles :
+- "text"  : réponse textuelle, explication, analyse, rédaction (modèles: openai, openai-fast, openai-large, mistral, llama, phi, gemini, deepseek)
+- "code"  : génération de code, debug, explication technique (modèles: qwen-coder, deepseek, openai-large)
+- "image" : génération d'une image (modèles: flux, turbo, kontext, flux-realism, flux-anime, flux-3d)
+- "video" : génération d'une courte vidéo (modèles: turbo, flux)
+
+Règles :
+1. Maximum {{MAX}} sous-tâches.
+2. Utilise "image" UNIQUEMENT si l'utilisateur demande explicitement une image, un visuel, un logo, un dessin, une illustration ou une photo.
+3. Utilise "video" UNIQUEMENT si l'utilisateur demande explicitement une vidéo, une animation ou un clip.
+4. Utilise "code" si la demande porte sur du code, un script, un algorithme ou de la programmation.
+5. Sinon, une seule tâche "text".
+6. Pour les prompts d'image, écris un prompt VISUEL détaillé et autonome en anglais ou français, SANS référence à l'utilisateur.
+7. "synthesis": true si plusieurs tâches → un modèle combinera les résultats. Sinon false.
+
+Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ni après :
+{
+  "reasoning": "explication courte",
+  "tasks": [
+    {"type": "text", "model": "openai", "prompt": "..."},
+    {"type": "image", "model": "flux", "prompt": "...", "width": 1024, "height": 1024},
+    {"type": "video", "model": "turbo", "prompt": "...", "frames": 8, "duration": 3},
+    {"type": "code", "model": "qwen-coder", "prompt": "..."}
+  ],
+  "synthesis": true
+}`;
+
+async function planTasks(userPrompt){
+  const prompt = PLANNER_PROMPT.replace('{{MAX}}', state.settings.maxTasks);
+  const messages = [
+    { role: 'system', content: prompt },
+    { role: 'user', content: userPrompt }
+  ];
+  const raw = await askText(messages, state.settings.orchModel);
+  console.log('[Planner raw]', raw);
+  const plan = extractJSON(raw);
+  if (!plan.tasks || !Array.isArray(plan.tasks)) throw new Error('Plan invalide');
+  // Limite
+  plan.tasks = plan.tasks.slice(0, state.settings.maxTasks);
+  // Validation basique
+  plan.tasks.forEach(t => {
+    if (!t.type) t.type = 'text';
+    if (!t.model){
+      if (t.type === 'image') t.model = state.settings.imageModel;
+      else if (t.type === 'video') t.model = 'turbo';
+      else if (t.type === 'code') t.model = 'qwen-coder';
+      else t.model = state.settings.textModel;
+    }
+  });
+  return plan;
+}
+
+/* ============================================================
+   ORCHESTRATEUR — EXÉCUTION
+   ============================================================ */
+async function executeTask(task, onUpdate){
+  onUpdate?.('running');
+  try {
+    if (task.type === 'text' || task.type === 'code'){
+      const model = task.model || (task.type === 'code' ? 'qwen-coder' : state.settings.textModel);
+      const text = await askText([
+        { role: 'system', content: state.settings.systemPrompt },
+        { role: 'user', content: task.prompt }
+      ], model);
+      onUpdate?.('done');
+      return { type:'text', model, content:text, prompt:task.prompt };
+    }
+    if (task.type === 'image'){
+      const w = task.width || 1024;
+      const h = task.height || 1024;
+      const model = task.model || state.settings.imageModel;
+      const url = buildImageURL(task.prompt, { width:w, height:h, model });
+      const blob = await fetchImageBlobWithRetry(url);
+      const objUrl = blobToObjectURL(blob);
+      onUpdate?.('done');
+      return { type:'image', model, url:objUrl, prompt:task.prompt, w, h };
+    }
+    if (task.type === 'video'){
+      const model = task.model || 'turbo';
+      const nFrames = Math.min(Math.max(task.frames || 8, 4), 14);
+      const duration = Math.min(Math.max(task.duration || 3, 2), 6);
+      const w = 768, h = 768;
+      // Génère les images
+      const baseSeed = Math.floor(Math.random() * 100000);
+      const blobs = [];
+      for (let i = 0; i < nFrames; i++){
+        const url = buildImageURL(task.prompt, { width:w, height:h, seed: baseSeed + i * 137, model });
+        const blob = await fetchImageBlobWithRetry(url, 1);
+        blobs.push(blob);
+      }
+      // Encode
+      const webmUrl = await encodeVideoFromBlobs(blobs, w, h, duration);
+      onUpdate?.('done');
+      return { type:'video', model, url:webmUrl, prompt:task.prompt, duration };
+    }
+    throw new Error('Type inconnu: ' + task.type);
+  } catch(e){
+    onUpdate?.('error', e.message);
+    return { type:'error', error: e.message, prompt: task.prompt, taskType: task.type };
+  }
+}
+
+async function encodeVideoFromBlobs(blobs, w, h, duration){
+  // Charge toutes les images
+  const images = await Promise.all(blobs.map(b => new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => res(im);
+    im.onerror = rej;
+    im.src = blobToObjectURL(b);
+  })));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  const fps = 25;
+  const totalFrames = Math.max(duration * fps, images.length * 4);
+  const perImage = totalFrames / images.length;
+
+  const stream = canvas.captureStream(fps);
+  let mime = 'video/webm;codecs=vp9';
+  if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp8';
+  if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
+  const chunks = [];
+  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  const stopped = new Promise(r => rec.onstop = r);
+
+  rec.start(100);
+
+  for (let f = 0; f < totalFrames; f++){
+    const t = f / perImage;
+    const idx = Math.min(Math.floor(t), images.length - 1);
+    const nxt = Math.min(idx + 1, images.length - 1);
+    const alpha = Math.min(t - idx, 1);
+    const zoom = 1 + 0.04 * (f / totalFrames);
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, w, h);
+
+    const draw = (img, a, z) => {
+      ctx.globalAlpha = a;
+      const ir = img.width / img.height;
+      const cr = w / h;
+      let dw, dh;
+      if (ir > cr){ dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
+      dw *= z; dh *= z;
+      ctx.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh);
+    };
+    draw(images[idx], 1, zoom);
+    if (alpha > 0 && nxt !== idx) draw(images[nxt], alpha, zoom);
+
+    await new Promise(r => setTimeout(r, 1000 / fps));
+  }
+
+  rec.stop();
+  await stopped;
+  const blob = new Blob(chunks, { type:'video/webm' });
+  return blobToObjectURL(blob);
+}
+
+/* ============================================================
+   ORCHESTRATEUR — SYNTHÈSE
+   ============================================================ */
+async function synthesize(userPrompt, results){
+  const context = results.map((r, i) => {
+    if (r.type === 'text') return `### Tâche ${i+1} (texte, ${r.model})\n${r.content}`;
+    if (r.type === 'code') return `### Tâche ${i+1} (code, ${r.model})\n\`\`\`\n${r.content}\n\`\`\``;
+    if (r.type === 'image') return `### Tâche ${i+1} (image, ${r.model})\nUne image a été générée avec le prompt : "${r.prompt}". Décris-la brièvement dans ta réponse.`;
+    if (r.type === 'video') return `### Tâche ${i+1} (vidéo, ${r.model})\nUne vidéo a été générée avec le prompt : "${r.prompt}". Mentionne-la.`;
+    if (r.type === 'error') return `### Tâche ${i+1} (${r.taskType}) — ÉCHEC : ${r.error}`;
+    return '';
+  }).join('\n\n');
+
+  const sysPrompt = `Tu es un assistant qui combine les résultats de plusieurs sous-tâches IA en UNE réponse finale unifiée, claire et naturelle pour l'utilisateur. Ne mentionne pas "tâche 1", "tâche 2" : intègre tout naturellement. Si une image ou une vidéo a été générée, dis-le simplement sans décrire les détails techniques. Réponds dans la langue de la question initiale. Utilise du markdown.`;
+
+  const userContent = `Question initiale : "${userPrompt}"\n\nRésultats des sous-tâches :\n\n${context}\n\nProduis maintenant la réponse finale unifiée.`;
+
+  const final = await askText([
+    { role: 'system', content: sysPrompt },
+    { role: 'user', content: userContent }
+  ], state.settings.synthModel);
+
+  return final;
+}
+
+/* ============================================================
+   CHAT — ENVOI
+   ============================================================ */
+const promptInput = $('#user-input');
+const sendBtn = $('#send-btn');
+
+function autoResize(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+promptInput.addEventListener('input', () => autoResize(promptInput));
+promptInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+});
+
+$('#new-chat-btn').addEventListener('click', newConversation);
+$('#history-btn').addEventListener('click', openHistory);
+
+/* Orchestrator toggle */
+$('#orch-toggle').addEventListener('click', () => {
+  state.orchestrator = !state.orchestrator;
+  $('#orch-toggle').classList.toggle('on', state.orchestrator);
+  $('#chat-model').disabled = state.orchestrator;
+  saveState();
+  toast(state.orchestrator ? '🧠 Mode orchestrateur activé' : '💬 Mode chat direct', 'ok');
+});
+
+/* Attachment */
+$('#attach-btn').addEventListener('click', () => $('#file-input').click());
+$('#file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024){ toast('Image trop lourde (max 4 Mo)', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.attachment = { dataUrl: ev.target.result, name: file.name };
+    renderAttachmentPreview();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+function renderAttachmentPreview(){
+  const box = $('#attachment-preview');
+  if (!state.attachment){ box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="flex items-center gap-3 bg-slate-900/70 border border-slate-800 rounded-xl p-2 max-w-fit">
+      <img src="${state.attachment.dataUrl}" class="w-12 h-12 rounded-lg object-cover border border-slate-700" />
+      <span class="text-xs text-slate-400 max-w-[180px] truncate">${escapeHTML(state.attachment.name)}</span>
+      <button id="remove-attachment" class="text-slate-500 hover:text-rose-400 px-2 text-lg leading-none">×</button>
+    </div>`;
+  $('#remove-attachment').addEventListener('click', () => {
+    state.attachment = null;
+    renderAttachmentPreview();
+  });
+}
+
+/* Bulle d'exécution live */
+function createOrchestratorBubble(plan){
+  const box = $('#chat-messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'flex justify-start animate-fade-in';
+
+  const icons = { text:'💬', image:'🎨', video:'🎬', code:'💻' };
+
+  const stepsHtml = plan.tasks.map((t, i) => `
+    <div class="pipeline-step" data-step="${i}">
+      <span>${icons[t.type] || '•'}</span>
+      <span class="font-semibold">${t.type}</span>
+      <span class="text-slate-500 truncate flex-1 min-w-0">${escapeHTML((t.prompt||'').slice(0,50))}${(t.prompt||'').length>50?'…':''}</span>
+      <span class="step-status text-[10px]">⏳</span>
+    </div>`).join('');
+
+  wrap.innerHTML = `
+    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed w-full min-w-0">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Orchestrateur en action</span>
+      </div>
+      <details open class="mb-3">
+        <summary class="text-[10px] font-bold text-slate-400 uppercase tracking-wider cursor-pointer select-none mb-2">
+          🧠 Plan · ${plan.tasks.length} tâche(s)
+        </summary>
+        <div class="space-y-1.5">${stepsHtml}</div>
+      </details>
+      <div class="content text-slate-300"></div>
+    </div>`;
+  box.appendChild(wrap);
+  box.scrollTop = box.scrollHeight;
+  return wrap;
+}
+
+function updateStepStatus(wrap, index, status){
+  const step = wrap.querySelector(`.pipeline-step[data-step="${index}"]`);
+  if (!step) return;
+  const s = step.querySelector('.step-status');
+  step.classList.remove('active', 'done', 'error');
+  if (status === 'running'){ step.classList.add('active'); s.textContent = '⚙️'; }
+  else if (status === 'done'){ step.classList.add('done'); s.textContent = '✅'; }
+  else if (status === 'error'){ step.classList.add('error'); s.textContent = '⚠️'; }
 }
 
 async function sendMessage(){
@@ -820,14 +1216,12 @@ async function sendMessage(){
     image: state.attachment?.dataUrl || null
   };
   conv.messages.push(userMsg);
-
-  // titre automatique
   if (conv.title === 'Nouvelle conversation'){
     conv.title = (text || 'Image').slice(0, 50) + ((text || '').length > 50 ? '…' : '');
   }
 
-  appendMessageEl('user', userMsg.content, userMsg.image);
-
+  appendMessageEl(userMsg);
+  const userPrompt = text;
   promptInput.value = '';
   autoResize(promptInput);
   state.attachment = null;
@@ -836,129 +1230,203 @@ async function sendMessage(){
   state.busy = true;
   sendBtn.disabled = true;
 
-  // Message bot en cours
-  const botWrap = document.createElement('div');
-  botWrap.className = 'flex justify-start animate-fade-in';
-  botWrap.innerHTML = `
-    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed msg-md min-w-0 break-words w-full">
-      <span class="block text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Assistant Hub</span>
-      <div class="content"><div class="flex gap-1.5 py-1"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
-    </div>`;
-  $('#chat-messages').appendChild(botWrap);
-  $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
+  try {
+    if (state.orchestrator){
+      await runOrchestrator(userPrompt, conv);
+    } else {
+      await runDirectChat(userPrompt, conv);
+    }
+  } catch(err){
+    console.error(err);
+    toast('Erreur : ' + (err.message || err), 'err');
+  } finally {
+    state.busy = false;
+    sendBtn.disabled = false;
+    saveState();
+    promptInput.focus();
+  }
+}
 
-  const contentEl = botWrap.querySelector('.content');
+/* --- Mode chat direct --- */
+async function runDirectChat(userPrompt, conv){
+  const box = $('#chat-messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'flex justify-start animate-fade-in';
+  wrap.innerHTML = `
+    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed w-full min-w-0">
+      <span class="block text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Assistant</span>
+      <div class="content msg-md"><div class="flex gap-1.5 py-1"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+    </div>`;
+  box.appendChild(wrap);
+  box.scrollTop = box.scrollHeight;
+
+  const contentEl = wrap.querySelector('.content');
   const model = $('#chat-model').value;
   const sys = state.settings.systemPrompt;
 
   const apiMessages = [
-    ...(sys ? [{ role: 'system', content: sys }] : []),
-    ...conv.messages.map(m => ({ role: m.role, content: m.content }))
+    ...(sys ? [{ role:'system', content:sys }] : []),
+    ...conv.messages.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role:m.role, content:m.content }))
   ];
 
   let full = '';
-  let firstChunk = true;
-
+  let first = true;
   try {
     for await (const chunk of streamChat(apiMessages, model)){
-      if (firstChunk){ contentEl.innerHTML = ''; firstChunk = false; }
+      if (first){ contentEl.innerHTML = ''; first = false; }
       full += chunk;
       contentEl.innerHTML = renderMarkdown(full) + '<span class="cursor-blink"></span>';
-      $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
+      box.scrollTop = box.scrollHeight;
     }
-  } catch(err){
-    console.warn('Streaming échoué, fallback non-streaming', err);
+  } catch(e){
+    full = await askText(apiMessages, model);
+  }
+  if (!full) full = '*(réponse vide)*';
+  contentEl.innerHTML = renderMarkdown(full);
+
+  conv.messages.push({ role:'assistant', content:full });
+}
+
+/* --- Mode orchestrateur --- */
+async function runOrchestrator(userPrompt, conv){
+  const box = $('#chat-messages');
+
+  // Étape 1 : planification
+  const planBubble = document.createElement('div');
+  planBubble.className = 'flex justify-start animate-fade-in';
+  planBubble.innerHTML = `
+    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm w-full">
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 rounded-full border-2 border-slate-700 border-t-cyan-500 spin"></div>
+        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Analyse de la demande…</span>
+      </div>
+    </div>`;
+  box.appendChild(planBubble);
+  box.scrollTop = box.scrollHeight;
+
+  let plan;
+  try {
+    plan = await planTasks(userPrompt);
+    planBubble.remove();
+  } catch(e){
+    planBubble.remove();
+    console.warn('Planification échouée, fallback direct', e);
+    toast('Planificateur indisponible → chat direct', 'warn');
+    return runDirectChat(userPrompt, conv);
+  }
+
+  // Étape 2 : affichage du plan
+  const ui = createOrchestratorBubble(plan);
+  const contentEl = ui.querySelector('.content');
+  contentEl.innerHTML = `<span class="text-slate-400 text-xs">Exécution de ${plan.tasks.length} tâche(s) en parallèle…</span>`;
+
+  // Étape 3 : exécution parallèle
+  const results = await Promise.all(plan.tasks.map((task, i) =>
+    executeTask(task, (status, err) => {
+      updateStepStatus(ui, i, status);
+    })
+  ));
+
+  // Étape 4 : synthèse
+  let finalText;
+  if (results.length === 1 && results[0].type === 'text'){
+    finalText = results[0].content;
+  } else if (plan.synthesis !== false && results.filter(r => r.type === 'text' || r.type === 'code').length > 1){
+    contentEl.innerHTML = `<span class="text-slate-400 text-xs flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-slate-700 border-t-cyan-500 spin inline-block"></span>Synthèse finale…</span>`;
     try {
-      full = await fallbackChat(apiMessages, model);
-    } catch(err2){
-      full = "⚠️ Une micro-coupure réseau est survenue. Réessaie dans un instant.";
-      toast('Erreur réseau', 'err');
+      finalText = await synthesize(userPrompt, results);
+    } catch(e){
+      console.warn('Synthèse échouée', e);
+      finalText = results.filter(r => r.content).map(r => r.content).join('\n\n---\n\n') || 'Résultats générés.';
+    }
+  } else {
+    const parts = results.filter(r => r.type === 'text' || r.type === 'code').map(r => r.content);
+    finalText = parts.length ? parts.join('\n\n') : '✨ Génération terminée.';
+    if (!parts.length){
+      const artifacts = results.filter(r => r.type === 'image' || r.type === 'video').length;
+      finalText = artifacts ? `✨ ${artifacts} média(s) généré(s) ci-dessous.` : '✨ Terminé.';
     }
   }
 
-  if (!full) full = '*(réponse vide)*';
+  // Étape 5 : remplacement du contenu
+  const artifacts = results.filter(r => r.type === 'image' || r.type === 'video').map(r => ({
+    type: r.type, model: r.model, url: r.url
+  }));
 
-  contentEl.innerHTML = renderMarkdown(full);
+  const errors = results.filter(r => r.type === 'error');
+  if (errors.length){
+    finalText += `\n\n> ⚠️ ${errors.length} tâche(s) ont échoué : ${errors.map(e => e.taskType).join(', ')}.`;
+  }
 
-  // actions
-  const acts = document.createElement('div');
-  acts.className = 'actions mt-3 flex gap-1 opacity-0 transition-opacity';
-  const copyBtn = document.createElement('button');
-  copyBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
-  copyBtn.textContent = '📋 Copier';
-  copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(full);
-    toast('Copié !', 'ok');
+  contentEl.innerHTML = renderMarkdown(finalText);
+
+  // Injecter les médias
+  if (artifacts.length){
+    const art = document.createElement('div');
+    art.className = 'mt-4 space-y-3';
+    artifacts.forEach(a => {
+      const div = document.createElement('div');
+      div.className = 'rounded-xl border border-slate-800 bg-slate-950/60 p-2';
+      if (a.type === 'image'){
+        div.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="badge badge-pink">🎨 Image · ${a.model}</span>
+            <button class="dl text-[11px] text-slate-400 hover:text-cyan-400">⬇️ Télécharger</button>
+          </div>
+          <img src="${a.url}" class="w-full rounded-lg cursor-zoom-in" />`;
+        div.querySelector('img').addEventListener('click', () => {
+          $('#lightbox-img').src = a.url;
+          $('#lightbox').classList.add('show');
+        });
+        div.querySelector('.dl').addEventListener('click', () => {
+          const l = document.createElement('a');
+          l.href = a.url; l.download = 'nexus-img-' + Date.now() + '.jpg'; l.click();
+        });
+      } else {
+        div.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="badge badge-violet">🎬 Vidéo · ${a.model}</span>
+            <button class="dl text-[11px] text-slate-400 hover:text-cyan-400">⬇️ Télécharger</button>
+          </div>
+          <video src="${a.url}" controls autoplay loop class="w-full rounded-lg"></video>`;
+        div.querySelector('.dl').addEventListener('click', () => {
+          const l = document.createElement('a');
+          l.href = a.url; l.download = 'nexus-video-' + Date.now() + '.webm'; l.click();
+        });
+      }
+      art.appendChild(div);
+    });
+    ui.querySelector('.glass').appendChild(art);
+  }
+
+  // Sauvegarde dans la conversation
+  conv.messages.push({
+    role: 'assistant',
+    content: finalText,
+    plan: plan.tasks.map(t => ({ type:t.type, model:t.model, prompt:t.prompt })),
+    artifacts
   });
-  const regenBtn = document.createElement('button');
-  regenBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
-  regenBtn.textContent = '🔄 Régénérer';
-  regenBtn.addEventListener('click', () => regenerate());
-  acts.append(copyBtn, regenBtn);
-  botWrap.querySelector('.glass').appendChild(acts);
-  botWrap.addEventListener('mouseenter', () => acts.style.opacity = '1');
-  botWrap.addEventListener('mouseleave', () => acts.style.opacity = '0');
 
-  conv.messages.push({ role: 'assistant', content: full });
-  saveState();
-
-  state.busy = false;
-  sendBtn.disabled = false;
-  promptInput.focus();
-}
-
-function regenerate(){
-  const conv = getCurrent();
-  if (!conv || state.busy) return;
-  // retire le dernier assistant
-  if (conv.messages[conv.messages.length - 1]?.role === 'assistant') conv.messages.pop();
-  // retire le dernier user pour le renvoyer
-  const lastUser = conv.messages[conv.messages.length - 1];
-  if (!lastUser || lastUser.role !== 'user') return;
-  conv.messages.pop();
-  saveState();
-  renderChat();
-  promptInput.value = lastUser.content;
-  state.attachment = lastUser.image ? { dataUrl: lastUser.image, name: 'image' } : null;
-  renderAttachmentPreview();
-  sendMessage();
+  toast('✅ Réponse orchestrée', 'ok');
 }
 
 /* ============================================================
-   IMAGE
+   IMAGE — MANUEL
    ============================================================ */
 function fillImageSelects(){
-  const targets = ['#img-model', '#vid-model', '#set-image-model'];
-  targets.forEach(sel => {
+  ['#img-model', '#vid-model', '#set-image-model'].forEach(sel => {
     const el = $(sel);
     if (!el) return;
     el.innerHTML = '';
     IMAGE_MODELS.forEach(m => {
       const o = document.createElement('option');
-      o.value = m.id;
-      o.textContent = m.name;
+      o.value = m.id; o.textContent = m.name;
       el.appendChild(o);
     });
   });
   $('#img-model').value = state.settings.imageModel;
   $('#vid-model').value = 'turbo';
   $('#set-image-model').value = state.settings.imageModel;
-}
-
-function buildImageURL(prompt, { width, height, seed, model }){
-  const p = encodeURIComponent(prompt);
-  const s = seed ?? Math.floor(Math.random() * 1e9);
-  return `https://image.pollinations.ai/prompt/${p}?width=${width}&height=${height}&seed=${s}&model=${model}&nologo=true&referrer=opensource-ai-hub`;
-}
-
-function loadImage(url){
-  return new Promise((resolve, reject) => {
-    const im = new Image();
-    im.crossOrigin = 'anonymous';
-    im.onload = () => resolve(im);
-    im.onerror = () => reject(new Error('Échec du chargement de l\'image'));
-    im.src = url;
-  });
 }
 
 $$('#ratio-chips .chip').forEach(c => c.addEventListener('click', () => {
@@ -1001,46 +1469,55 @@ async function generateImage(){
   let pct = 0;
   const bar = $('#img-progress');
   const timer = setInterval(() => {
-    pct = Math.min(pct + Math.random() * 9, 92);
+    pct = Math.min(pct + Math.random() * 8, 90);
     if (bar) bar.style.width = pct + '%';
-  }, 320);
+  }, 300);
 
   try {
     const url = buildImageURL(prompt, {
       width: w, height: h, model,
       seed: seedVal ? +seedVal : undefined
     });
-    const im = await loadImage(url);
+    const blob = await fetchImageBlobWithRetry(url);
+    const objUrl = blobToObjectURL(blob);
     clearInterval(timer);
 
     stage.innerHTML = '';
-    stage.appendChild(im);
-    state.lastImage = { url, prompt, w, h, model };
+    const img = document.createElement('img');
+    img.src = objUrl;
+    img.className = 'max-w-full rounded-xl shadow-2xl cursor-zoom-in';
+    img.style.maxHeight = '60vh';
+    img.addEventListener('click', () => {
+      $('#lightbox-img').src = objUrl;
+      $('#lightbox').classList.add('show');
+    });
+    stage.appendChild(img);
+
+    state.lastImage = { url: objUrl, prompt, w, h, model };
     $('#img-download').disabled = false;
 
-    // galerie
     $('#img-gallery-wrap').classList.remove('hidden');
     const g = document.createElement('img');
-    g.src = url;
+    g.src = objUrl;
     g.title = prompt;
     g.className = 'w-full aspect-square object-cover rounded-lg border border-slate-800 cursor-pointer hover:scale-105 hover:border-cyan-500/50 transition';
     g.addEventListener('click', () => {
       stage.innerHTML = '';
-      const big = new Image();
-      big.crossOrigin = 'anonymous';
-      big.src = url;
-      big.style.maxWidth = '100%';
-      big.style.borderRadius = '12px';
+      const big = document.createElement('img');
+      big.src = objUrl;
+      big.className = 'max-w-full rounded-xl shadow-2xl';
+      big.style.maxHeight = '60vh';
       stage.appendChild(big);
-      state.lastImage = { url, prompt, w, h, model };
-      $('#img-download').disabled = false;
     });
     $('#img-gallery').prepend(g);
 
     toast('Image générée ✨', 'ok');
   } catch(err){
     clearInterval(timer);
-    stage.innerHTML = `<div class="text-center text-rose-400 text-sm">⚠️ ${escapeHTML(err.message)}</div>`;
+    stage.innerHTML = `<div class="text-center text-rose-400 text-sm p-6">
+      ⚠️ ${escapeHTML(err.message)}<br>
+      <span class="text-xs text-slate-500 mt-2 block">Essaie avec un autre modèle (Turbo est le plus fiable).</span>
+    </div>`;
     toast('Erreur de génération', 'err');
   } finally {
     btn.disabled = false;
@@ -1052,13 +1529,12 @@ $('#img-download').addEventListener('click', () => {
   const a = document.createElement('a');
   a.href = state.lastImage.url;
   a.download = 'nexus-' + Date.now() + '.jpg';
-  a.target = '_blank';
   a.click();
   toast('Téléchargement lancé', 'ok');
 });
 
 /* ============================================================
-   VIDÉO
+   VIDÉO — MANUEL
    ============================================================ */
 $$('#motion-chips .chip').forEach(c => c.addEventListener('click', () => {
   $$('#motion-chips .chip').forEach(x => x.classList.remove('active'));
@@ -1067,15 +1543,6 @@ $$('#motion-chips .chip').forEach(c => c.addEventListener('click', () => {
 }));
 
 $('#vid-generate').addEventListener('click', generateVideo);
-
-function drawZoomed(ctx, img, w, h, zoom){
-  const ir = img.width / img.height;
-  const cr = w / h;
-  let dw, dh;
-  if (ir > cr){ dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
-  dw *= zoom; dh *= zoom;
-  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-}
 
 async function generateVideo(){
   const prompt = $('#vid-prompt').value.trim();
@@ -1086,7 +1553,6 @@ async function generateVideo(){
   const w = +$('#vid-w').value;
   const h = +$('#vid-h').value;
   const model = $('#vid-model').value;
-  const motion = state.motion;
 
   const stage = $('#vid-stage');
   const btn = $('#vid-generate');
@@ -1104,14 +1570,12 @@ async function generateVideo(){
   const status = $('#vid-status');
 
   try {
-    const images = [];
+    const blobs = [];
     const baseSeed = Math.floor(Math.random() * 100000);
-
     for (let i = 0; i < nFrames; i++){
-      const seed = baseSeed + i * 137;
-      const url = buildImageURL(prompt, { width: w, height: h, seed, model });
-      const im = await loadImage(url);
-      images.push(im);
+      const url = buildImageURL(prompt, { width: w, height: h, seed: baseSeed + i * 137, model });
+      const blob = await fetchImageBlobWithRetry(url, 1);
+      blobs.push(blob);
       if (bar) bar.style.width = ((i + 1) / nFrames * 55) + '%';
       if (status) status.textContent = `Génération des images… ${i+1}/${nFrames}`;
     }
@@ -1119,11 +1583,19 @@ async function generateVideo(){
     if (status) status.textContent = 'Animation et encodage…';
     if (bar) bar.style.width = '70%';
 
+    // Encode
+    const images = await Promise.all(blobs.map(b => new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = rej;
+      im.src = blobToObjectURL(b);
+    })));
+
     const canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext('2d');
 
-    const fps = 30;
+    const fps = 25;
     const totalFrames = duration * fps;
     const perImage = totalFrames / nFrames;
 
@@ -1132,7 +1604,7 @@ async function generateVideo(){
     if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp8';
     if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
 
-    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6_000_000 });
+    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 5_000_000 });
     const chunks = [];
     rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
     const done = new Promise(res => rec.onstop = res);
@@ -1141,10 +1613,6 @@ async function generateVideo(){
     canvas.style.maxWidth = '100%';
     canvas.style.borderRadius = '12px';
     stage.appendChild(canvas);
-    const bar2 = document.createElement('div');
-    bar2.className = 'absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all';
-    bar2.style.width = '70%';
-    stage.appendChild(bar2);
 
     rec.start(100);
 
@@ -1153,36 +1621,41 @@ async function generateVideo(){
       const idx = Math.min(Math.floor(t), nFrames - 1);
       const nxt = Math.min(idx + 1, nFrames - 1);
       const alpha = Math.min(t - idx, 1);
-      const zoom = 1 + 0.05 * motion * (f / totalFrames);
+      const zoom = 1 + 0.05 * state.motion * (f / totalFrames);
 
-      ctx.save();
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, w, h);
-      ctx.globalAlpha = 1;
-      drawZoomed(ctx, images[idx], w, h, zoom);
-      if (alpha > 0 && nxt !== idx){
-        ctx.globalAlpha = alpha;
-        drawZoomed(ctx, images[nxt], w, h, zoom);
-      }
-      ctx.restore();
 
-      bar2.style.width = (70 + (f / totalFrames) * 30) + '%';
+      const draw = (img, a, z) => {
+        ctx.globalAlpha = a;
+        const ir = img.width / img.height;
+        const cr = w / h;
+        let dw, dh;
+        if (ir > cr){ dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
+        dw *= z; dh *= z;
+        ctx.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh);
+      };
+      draw(images[idx], 1, zoom);
+      if (alpha > 0 && nxt !== idx) draw(images[nxt], alpha, zoom);
+
+      if (bar) bar.style.width = (70 + (f / totalFrames) * 30) + '%';
       await new Promise(r => setTimeout(r, 1000 / fps));
     }
 
     rec.stop();
     await done;
 
-    const blob = new Blob(chunks, { type: 'video/webm' });
-    state.lastVideoBlob = blob;
+    const blob = new Blob(chunks, { type:'video/webm' });
+    const objUrl = blobToObjectURL(blob);
+    state.lastVideoBlob = { url: objUrl, blob };
 
     const video = document.createElement('video');
-    video.src = URL.createObjectURL(blob);
+    video.src = objUrl;
     video.controls = true;
     video.autoplay = true;
     video.loop = true;
-    video.style.maxWidth = '100%';
-    video.style.borderRadius = '12px';
+    video.className = 'max-w-full rounded-xl shadow-2xl';
+    video.style.maxHeight = '60vh';
 
     stage.innerHTML = '';
     stage.appendChild(video);
@@ -1191,7 +1664,10 @@ async function generateVideo(){
     toast('Vidéo générée 🎬', 'ok');
   } catch(err){
     console.error(err);
-    stage.innerHTML = `<div class="text-center text-rose-400 text-sm">⚠️ ${escapeHTML(err.message)}</div>`;
+    stage.innerHTML = `<div class="text-center text-rose-400 text-sm p-6">
+      ⚠️ ${escapeHTML(err.message)}<br>
+      <span class="text-xs text-slate-500 mt-2 block">Réduis le nombre d'images ou la résolution si le problème persiste.</span>
+    </div>`;
     toast('Erreur vidéo : ' + err.message, 'err');
   } finally {
     btn.disabled = false;
@@ -1201,7 +1677,7 @@ async function generateVideo(){
 $('#vid-download').addEventListener('click', () => {
   if (!state.lastVideoBlob) return;
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(state.lastVideoBlob);
+  a.href = state.lastVideoBlob.url;
   a.download = 'nexus-video-' + Date.now() + '.webm';
   a.click();
   toast('Téléchargement lancé', 'ok');
@@ -1222,7 +1698,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
   recognition.lang = 'fr-FR';
   recognition.continuous = true;
   recognition.interimResults = true;
-
   recognition.onresult = e => {
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++){
@@ -1232,14 +1707,11 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
     }
     transcriptEl.textContent = (finalText + interim).trim() || '…';
   };
-  recognition.onerror = e => {
-    toast('Erreur micro : ' + e.error, 'err');
-    stopRec();
-  };
+  recognition.onerror = e => { toast('Erreur micro : ' + e.error, 'err'); stopRec(); };
   recognition.onend = () => { if (recording) recognition.start(); };
 } else {
   micBtn.disabled = true;
-  transcriptEl.textContent = "Reconnaissance vocale non supportée par ce navigateur.";
+  transcriptEl.textContent = "Reconnaissance vocale non supportée.";
 }
 
 function stopRec(){
@@ -1276,7 +1748,6 @@ $('#use-transcript').addEventListener('click', () => {
 /* TTS */
 const ttsVoiceSel = $('#tts-voice');
 let voices = [];
-
 function loadVoices(){
   voices = speechSynthesis.getVoices();
   ttsVoiceSel.innerHTML = '';
@@ -1309,88 +1780,66 @@ $('#tts-stop').addEventListener('click', () => speechSynthesis.cancel());
    PARAMÈTRES
    ============================================================ */
 function fillSettingsSelects(){
-  const tSel = $('#set-text-model');
-  tSel.innerHTML = '';
-  TEXT_MODELS.forEach(m => {
-    const o = document.createElement('option');
-    o.value = m.id; o.textContent = m.name;
-    tSel.appendChild(o);
+  // Remplir les selects texte partout
+  ['#chat-model', '#set-text-model', '#set-orch-model', '#set-synth-model'].forEach(sel => {
+    const el = $(sel);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = '';
+    TEXT_MODELS.forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.id; o.textContent = m.name;
+      el.appendChild(o);
+    });
+    if (cur) el.value = cur;
   });
-  tSel.value = state.settings.textModel;
 
+  $('#chat-model').value = state.settings.textModel;
+  $('#set-text-model').value = state.settings.textModel;
+  $('#set-orch-model').value = state.settings.orchModel;
+  $('#set-synth-model').value = state.settings.synthModel;
+  $('#set-max-tasks').value = state.settings.maxTasks;
   $('#set-system').value = state.settings.systemPrompt;
+  $('#chat-model').disabled = state.orchestrator;
 
-  tSel.addEventListener('change', () => {
-    state.settings.textModel = tSel.value;
-    $('#chat-model').value = tSel.value;
+  $('#set-text-model').onchange = e => { state.settings.textModel = e.target.value; saveState(); };
+  $('#set-orch-model').onchange = e => { state.settings.orchModel = e.target.value; saveState(); };
+  $('#set-synth-model').onchange = e => { state.settings.synthModel = e.target.value; saveState(); };
+  $('#set-max-tasks').oninput = e => {
+    state.settings.maxTasks = Math.min(Math.max(+e.target.value || 4, 1), 6);
     saveState();
-    toast('Modèle par défaut mis à jour', 'ok');
-  });
-  $('#set-image-model').addEventListener('change', e => {
-    state.settings.imageModel = e.target.value;
-    $('#img-model').value = e.target.value;
-    saveState();
-    toast('Modèle image mis à jour', 'ok');
-  });
-  $('#set-system').addEventListener('input', e => {
-    state.settings.systemPrompt = e.target.value;
-    saveState();
-  });
+  };
+  $('#set-system').oninput = e => { state.settings.systemPrompt = e.target.value; saveState(); };
+  $('#chat-model').onchange = e => { state.settings.textModel = e.target.value; saveState(); };
 }
 
 $('#export-btn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(state.conversations, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(state.conversations, null, 2)], { type:'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'opensource-ai-hub-conversations-' + Date.now() + '.json';
+  a.download = 'nexus-conversations-' + Date.now() + '.json';
   a.click();
   toast('Export lancé', 'ok');
 });
 
 $('#clear-all-btn').addEventListener('click', () => {
-  if (!confirm('Effacer toutes les conversations et réinitialiser les paramètres ?')) return;
+  if (!confirm('Effacer toutes les conversations ?')) return;
   localStorage.removeItem(STORAGE_KEY);
   state.conversations = [];
   state.currentId = null;
-  state.settings = {
-    textModel: 'openai',
-    imageModel: 'flux',
-    systemPrompt: "Tu es un assistant IA utile, précis et concis. Réponds en français par défaut."
-  };
   newConversation();
-  fillModelSelect();
-  fillImageSelects();
-  fillSettingsSelects();
   toast('Tout a été effacé', 'ok');
 });
 
 /* ============================================================
    INIT
    ============================================================ */
-function fillModelSelect(){
-  const sel = $('#chat-model');
-  sel.innerHTML = '';
-  TEXT_MODELS.forEach(m => {
-    const o = document.createElement('option');
-    o.value = m.id;
-    o.textContent = m.name;
-    sel.appendChild(o);
-  });
-  sel.value = state.settings.textModel;
-  sel.addEventListener('change', () => {
-    state.settings.textModel = sel.value;
-    saveState();
-  });
-}
-
 function init(){
   loadState();
 
-  fillModelSelect();
   fillImageSelects();
   fillSettingsSelects();
 
-  // Première conversation
   if (!state.conversations.length){
     newConversation();
   } else if (!state.currentId || !state.conversations.find(c => c.id === state.currentId)){
@@ -1398,18 +1847,20 @@ function init(){
   }
   renderChat();
 
-  // Fermeture des modales en cliquant sur le fond
+  $('#orch-toggle').classList.toggle('on', state.orchestrator);
+  $('#chat-model').disabled = state.orchestrator;
+
   $('#history-modal').addEventListener('click', e => {
     if (e.target === $('#history-modal')) closeHistory();
   });
+  $('#lightbox').addEventListener('click', () => $('#lightbox').classList.remove('show'));
 
-  // Focus initial
   promptInput.focus();
 }
 
 init();
-console.log('%c⚡ OpenSource AI Hub Pro', 'font-size:18px;font-weight:bold;color:#06b6d4');
-console.log('%c100% gratuit — aucune clé API requise', 'color:#34d399');
+console.log('%c✦ Nexus Orchestrator', 'font-size:18px;font-weight:bold;color:#06b6d4');
+console.log('%cMulti-IA · 100% gratuit · sans clé API', 'color:#34d399');
 </script>
 </body>
 </html>
