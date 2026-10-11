@@ -1,15 +1,21 @@
 <!DOCTYPE html>
-<html lang="fr" class="h-full">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexus Orchestrator — Multi-AI Hub</title>
+<title>Nexus Text AI — Assistant Textuel Puissant</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  * { font-family: 'Plus Jakarta Sans', sans-serif; }
+  * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
   code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
-  .glass { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  .glass { background: rgba(15, 23, 42, 0.78); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
@@ -21,15 +27,13 @@
   .animate-slide-in { animation: slideIn 0.25s ease; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .spin { animation: spin 0.8s linear infinite; }
-  @keyframes pulseRec { 0%,100% { box-shadow: 0 0 0 0 rgba(248,113,113,.55); } 50% { box-shadow: 0 0 0 18px rgba(248,113,113,0); } }
-  .pulse-rec { animation: pulseRec 1.4s infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-  .cursor-blink { display:inline-block; width:7px; height:15px; background:#06b6d4; border-radius:2px; vertical-align:text-bottom; animation: blink 0.9s infinite; margin-left:2px; }
   @keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity:.4; } 30% { transform: translateY(-6px); opacity:1; } }
   .dot { width:6px; height:6px; border-radius:50%; background:#64748b; animation: bounce 1.2s infinite; }
   .dot:nth-child(2) { animation-delay:.15s; }
   .dot:nth-child(3) { animation-delay:.3s; }
-  @keyframes glowPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,211,238,.4); } 50% { box-shadow: 0 0 24px 4px rgba(34,211,238,.15); } }
+  @keyframes blink { 50% { opacity: 0; } }
+  .cursor-blink { display:inline-block; width:7px; height:15px; background:#06b6d4; border-radius:2px; vertical-align:text-bottom; animation: blink 0.9s infinite; margin-left:2px; }
+  @keyframes glowPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(34,211,238,.4); } 50% { box-shadow: 0 0 22px 3px rgba(34,211,238,.15); } }
   .glow-pulse { animation: glowPulse 2.4s infinite; }
 
   .view { display: none; }
@@ -41,97 +45,211 @@
     border-color: rgba(6,182,212,.4);
   }
 
-  .msg-md p { margin: 0 0 10px; }
+  /* ---------- Markdown ---------- */
+  .msg-md { font-size: 14.5px; line-height: 1.75; word-wrap: break-word; overflow-wrap: break-word; }
+  .msg-md p { margin: 0 0 12px; }
   .msg-md p:last-child { margin: 0; }
-  .msg-md ul, .msg-md ol { margin: 8px 0 8px 20px; }
-  .msg-md li { margin: 4px 0; list-style: disc; }
-  .msg-md h1 { font-size: 1.15rem; font-weight: 700; margin: 14px 0 8px; }
-  .msg-md h2 { font-size: 1.05rem; font-weight: 700; margin: 12px 0 6px; }
-  .msg-md h3 { font-size: 1rem; font-weight: 600; margin: 10px 0 6px; }
-  .msg-md a { color: #22d3ee; text-decoration: underline; }
-  .msg-md pre { background: #060a14; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; overflow-x: auto; margin: 10px 0; }
-  .msg-md pre code { background: none; padding: 0; color: #e2e8f0; font-size: 12.5px; line-height: 1.6; }
-  .msg-md .inline-code { background: rgba(0,0,0,0.45); padding: 2px 6px; border-radius: 5px; color: #67e8f9; font-size: 12.5px; }
+  .msg-md ul, .msg-md ol { margin: 8px 0 12px 22px; }
+  .msg-md li { margin: 4px 0; }
+  .msg-md ul li { list-style: disc; }
+  .msg-md ol li { list-style: decimal; }
+  .msg-md h1 { font-size: 1.4rem; font-weight: 700; margin: 18px 0 10px; color: #f1f5f9; }
+  .msg-md h2 { font-size: 1.2rem; font-weight: 700; margin: 16px 0 8px; color: #f1f5f9; }
+  .msg-md h3 { font-size: 1.05rem; font-weight: 600; margin: 14px 0 6px; color: #e2e8f0; }
+  .msg-md h4 { font-size: .95rem; font-weight: 600; margin: 12px 0 4px; color: #e2e8f0; }
+  .msg-md a { color: #22d3ee; text-decoration: underline; text-underline-offset: 3px; }
+  .msg-md a:hover { color: #67e8f9; }
+  .msg-md blockquote { border-left: 3px solid #0891b2; padding: 4px 0 4px 14px; margin: 10px 0; color: #cbd5e1; font-style: italic; }
+  .msg-md strong { color: #f1f5f9; font-weight: 700; }
+  .msg-md em { font-style: italic; color: #e2e8f0; }
+  .msg-md hr { border: none; border-top: 1px solid #1e293b; margin: 16px 0; }
+  .msg-md table { border-collapse: collapse; margin: 12px 0; font-size: 13px; width: 100%; border-radius: 8px; overflow: hidden; }
+  .msg-md th, .msg-md td { border: 1px solid #1e293b; padding: 8px 12px; text-align: left; }
+  .msg-md th { background: rgba(6,182,212,.08); font-weight: 700; color: #e2e8f0; }
+  .msg-md tr:nth-child(even) td { background: rgba(15,23,42,.4); }
+  .msg-md :not(pre) > code {
+    background: rgba(0,0,0,.5); padding: 2px 6px; border-radius: 5px;
+    color: #67e8f9; font-size: 12.5px; border: 1px solid rgba(6,182,212,.15);
+  }
+  .msg-md input[type="checkbox"] { margin-right: 6px; }
 
-  .chip { padding: 6px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 500; background: rgba(15,23,42,.6); border: 1px solid #1e293b; color: #94a3b8; cursor: pointer; transition: all .18s; user-select: none; }
+  /* ---------- Code blocks ---------- */
+  .code-block {
+    margin: 14px 0;
+    border-radius: 12px;
+    border: 1px solid #1e293b;
+    background: #060a14;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  }
+  .code-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 12px;
+    background: rgba(15, 23, 42, 0.85);
+    border-bottom: 1px solid #1e293b;
+    font-size: 11px;
+  }
+  .code-lang {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: #67e8f9;
+  }
+  .code-lang::before { content: '◆'; color: #0891b2; font-size: 8px; }
+  .code-actions { display: flex; gap: 2px; }
+  .code-actions button {
+    padding: 4px 9px; border-radius: 6px; color: #94a3b8;
+    font-size: 11px; font-weight: 500;
+    background: transparent; border: 1px solid transparent;
+    transition: all .15s; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .code-actions button:hover { background: rgba(255,255,255,.06); color: #e2e8f0; border-color: #1e293b; }
+  .code-actions button.copied { color: #6ee7b7; }
+  .code-block pre {
+    margin: 0; padding: 14px 16px; overflow-x: auto;
+    background: transparent !important;
+  }
+  .code-block pre code {
+    background: transparent !important; padding: 0 !important;
+    font-size: 12.5px; line-height: 1.65;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ---------- Chips / inputs ---------- */
+  .chip { padding: 6px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 500;
+    background: rgba(15,23,42,.6); border: 1px solid #1e293b; color: #94a3b8;
+    cursor: pointer; transition: all .18s; user-select: none; }
   .chip:hover { border-color: #334155; color: #e2e8f0; }
   .chip.active { background: rgba(6,182,212,.18); border-color: rgba(6,182,212,.5); color: #fff; }
 
-  .field label { display:block; font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-  .input { width:100%; background: rgba(15,23,42,.6); border: 1px solid #1e293b; color: #e2e8f0; border-radius: 10px; padding: 9px 12px; font-size: 13px; outline: none; transition: border .18s, box-shadow .18s; }
+  .field label { display:block; font-size: 10.5px; font-weight: 700; color: #64748b;
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .input { width:100%; background: rgba(15,23,42,.6); border: 1px solid #1e293b;
+    color: #e2e8f0; border-radius: 10px; padding: 9px 12px; font-size: 13px;
+    outline: none; transition: border .18s, box-shadow .18s; }
   .input:focus { border-color: rgba(6,182,212,.6); box-shadow: 0 0 0 3px rgba(6,182,212,.12); }
+  textarea.input { resize: vertical; line-height: 1.55; }
   select.input { appearance: none; cursor: pointer; padding-right: 30px;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 11px center; }
-  select.input option { background:#0f172a; color:#e2e8f0; }
+  select.input option, select.input optgroup { background:#0f172a; color:#e2e8f0; }
 
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.65); backdrop-filter: blur(4px); z-index: 90; display: none; }
+  /* ---------- Modal ---------- */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.65);
+    backdrop-filter: blur(4px); z-index: 90; display: none; }
   .modal-backdrop.show { display: flex; align-items: center; justify-content: center; padding: 16px; }
 
-  /* Task cards in orchestrator */
-  .task-card {
-    border-radius: 14px;
-    border: 1px solid #1e293b;
-    background: rgba(15,23,42,.5);
-    padding: 12px 14px;
-    transition: all .2s;
-  }
-  .task-card.running { border-color: rgba(6,182,212,.5); background: rgba(6,182,212,.06); }
-  .task-card.done { border-color: rgba(52,211,153,.4); }
-  .task-card.error { border-color: rgba(248,113,113,.5); background: rgba(248,113,113,.05); }
+  /* ---------- Toggle ---------- */
+  .toggle { position: relative; width: 40px; height: 22px; border-radius: 11px;
+    background: #1e293b; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%; background: #64748b; transition: all .2s; }
+  .toggle.on { background: linear-gradient(90deg, #0891b2, #4f46e5); }
+  .toggle.on::after { left: 21px; background: #fff; }
 
+  /* ---------- Badges ---------- */
+  .badge { display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; letter-spacing: .03em; }
+  .badge-cyan { background: rgba(6,182,212,.15); color: #67e8f9; }
+  .badge-violet { background: rgba(139,92,246,.15); color: #c4b5fd; }
+  .badge-emerald { background: rgba(52,211,153,.15); color: #6ee7b7; }
+  .badge-amber { background: rgba(245,158,11,.15); color: #fcd34d; }
+  .badge-rose { background: rgba(244,63,94,.15); color: #fda4af; }
+
+  /* ---------- Pipeline ---------- */
   .pipeline-step {
     display: flex; align-items: center; gap: 8px;
     padding: 6px 10px; border-radius: 8px;
     font-size: 11.5px; font-weight: 500;
     background: rgba(15,23,42,.7);
     border: 1px solid #1e293b;
+    transition: all .2s;
   }
   .pipeline-step.active { border-color: rgba(6,182,212,.6); background: rgba(6,182,212,.08); color: #67e8f9; }
   .pipeline-step.done { border-color: rgba(52,211,153,.4); color: #6ee7b7; }
+  .pipeline-step.error { border-color: rgba(248,113,113,.5); color: #fda4af; }
 
-  .toggle { position: relative; width: 42px; height: 24px; border-radius: 12px; background: #1e293b; cursor: pointer; transition: background .2s; flex-shrink: 0; }
-  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #64748b; transition: all .2s; }
-  .toggle.on { background: linear-gradient(90deg, #0891b2, #4f46e5); }
-  .toggle.on::after { left: 21px; background: #fff; }
+  /* ---------- Dropdown ---------- */
+  .dropdown { position: relative; }
+  .dropdown-menu { position: absolute; top: calc(100% + 6px); right: 0;
+    background: #0f172a; border: 1px solid #1e293b; border-radius: 12px;
+    padding: 6px; min-width: 200px; box-shadow: 0 20px 40px rgba(0,0,0,.5);
+    z-index: 50; display: none; }
+  .dropdown-menu.show { display: block; }
+  .dropdown-item { display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 8px; font-size: 12.5px; color: #cbd5e1;
+    cursor: pointer; transition: all .15s; }
+  .dropdown-item:hover { background: rgba(6,182,212,.1); color: #fff; }
+  .dropdown-item .icon { font-size: 14px; }
 
-  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; letter-spacing: .03em; }
-  .badge-cyan { background: rgba(6,182,212,.15); color: #67e8f9; }
-  .badge-violet { background: rgba(139,92,246,.15); color: #c4b5fd; }
-  .badge-pink { background: rgba(236,72,153,.15); color: #f9a8d4; }
-  .badge-amber { background: rgba(245,158,11,.15); color: #fcd34d; }
-  .badge-emerald { background: rgba(52,211,153,.15); color: #6ee7b7; }
-  .badge-rose { background: rgba(244,63,94,.15); color: #fda4af; }
+  /* ---------- Message actions ---------- */
+  .msg-actions { display: flex; gap: 4px; opacity: 0; transition: opacity .2s; }
+  .msg:hover .msg-actions { opacity: 1; }
+  .msg-actions button {
+    padding: 4px 9px; border-radius: 6px; font-size: 11px; color: #94a3b8;
+    background: transparent; border: 1px solid transparent;
+    transition: all .15s; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .msg-actions button:hover { background: rgba(255,255,255,.06); color: #e2e8f0; border-color: #1e293b; }
+
+  /* ---------- Composer ---------- */
+  #user-input { scrollbar-width: thin; }
+
+  /* ---------- Animations for code streaming ---------- */
+  .streaming .msg-md > *:last-child::after {
+    content: ''; display: inline-block; width: 7px; height: 15px;
+    background: #06b6d4; border-radius: 2px; margin-left: 3px;
+    vertical-align: text-bottom; animation: blink 0.9s infinite;
+  }
+
+  /* ---------- Empty state ---------- */
+  .example-prompt {
+    cursor: pointer; padding: 10px 14px; border-radius: 12px;
+    border: 1px solid #1e293b; background: rgba(15,23,42,.4);
+    transition: all .18s; font-size: 13px; color: #cbd5e1;
+  }
+  .example-prompt:hover { border-color: rgba(6,182,212,.5); background: rgba(6,182,212,.05); color: #fff; }
+
+  /* ---------- History cards ---------- */
+  .conv-card {
+    padding: 16px; border-radius: 14px; border: 1px solid #1e293b;
+    background: rgba(15,23,42,.5); cursor: pointer; transition: all .2s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .conv-card:hover { border-color: rgba(6,182,212,.5); background: rgba(6,182,212,.04); transform: translateY(-2px); }
+  .conv-card.active { border-color: rgba(6,182,212,.6); background: rgba(6,182,212,.08); }
 </style>
 </head>
 <body class="bg-[#07090e] text-slate-100 h-full flex overflow-hidden">
 
 <!-- ==================== SIDEBAR ==================== -->
-<aside class="w-16 md:w-56 flex-shrink-0 glass border-r border-slate-800/80 flex flex-col z-30">
+<aside class="w-16 md:w-60 flex-shrink-0 glass border-r border-slate-800/80 flex flex-col z-30">
   <div class="p-3 md:p-4 flex items-center gap-3 border-b border-slate-800/60">
     <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-white/20 flex-shrink-0 glow-pulse">
       <span class="text-white font-bold text-lg">✦</span>
     </div>
     <div class="hidden md:block min-w-0">
-      <h1 class="text-sm font-bold bg-gradient-to-r from-white via-cyan-200 to-indigo-400 bg-clip-text text-transparent whitespace-nowrap">Nexus Orchestrator</h1>
+      <h1 class="text-sm font-bold bg-gradient-to-r from-white via-cyan-200 to-indigo-400 bg-clip-text text-transparent whitespace-nowrap">Nexus Text AI</h1>
       <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Multi-IA gratuit
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Multi-modèles gratuit
       </p>
     </div>
   </div>
 
+  <div class="p-2 md:p-3">
+    <button id="new-chat-btn" class="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-2.5 px-3 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-95">
+      <span class="text-base">＋</span>
+      <span class="hidden md:inline">Nouvelle conversation</span>
+    </button>
+  </div>
+
   <nav class="flex-1 p-2 md:p-3 space-y-1 overflow-y-auto">
     <button class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="chat">
-      <span class="text-base">🧠</span><span class="hidden md:inline">Orchestrateur</span>
+      <span class="text-base">💬</span><span class="hidden md:inline">Chat</span>
     </button>
-    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="image">
-      <span class="text-base">🎨</span><span class="hidden md:inline">Image</span>
-    </button>
-    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="video">
-      <span class="text-base">🎬</span><span class="hidden md:inline">Vidéo</span>
-    </button>
-    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="voice">
-      <span class="text-base">🎙️</span><span class="hidden md:inline">Voix</span>
+    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="history">
+      <span class="text-base">📚</span><span class="hidden md:inline">Historique</span>
     </button>
     <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="settings">
       <span class="text-base">⚙️</span><span class="hidden md:inline">Paramètres</span>
@@ -139,32 +257,48 @@
   </nav>
 
   <div class="hidden md:block p-4 border-t border-slate-800/60 text-[11px] text-slate-500 leading-relaxed">
-    1 requête →<br>N sous-tâches →<br>1 réponse finale
+    <div class="flex items-center gap-2 mb-1.5">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+      <span class="text-emerald-400 font-medium">Aucune clé API</span>
+    </div>
+    Streaming · Fichiers · Code · Orchestrateur multi-IA
   </div>
 </aside>
 
 <!-- ==================== MAIN ==================== -->
 <main class="flex-1 flex flex-col min-w-0 min-h-0">
 
-  <!-- ============ CHAT / ORCHESTRATOR ============ -->
+  <!-- ============ CHAT VIEW ============ -->
   <section id="view-chat" class="view active flex-1 flex-col min-h-0">
     <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-2 flex-wrap">
-      <button id="new-chat-btn" class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition">
-        <span>＋</span><span class="hidden sm:inline">Nouvelle</span>
-      </button>
-      <button id="history-btn" class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition">
-        <span>📚</span><span class="hidden sm:inline">Historique</span>
-      </button>
-      <div class="flex-1"></div>
-
-      <!-- Orchestrator toggle -->
-      <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2">
-        <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Auto</span>
-        <div id="orch-toggle" class="toggle on" title="Mode orchestrateur : l'IA choisit les tâches"></div>
+      <div class="flex-1 min-w-0">
+        <h2 id="chat-title" class="text-sm font-bold text-white truncate">Nouvelle conversation</h2>
+        <p id="chat-subtitle" class="text-[11px] text-slate-500 truncate">Prêt · Tapez un message pour commencer</p>
       </div>
+
+      <!-- Orchestrator -->
+      <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2" title="L'IA planifie et exécute plusieurs sous-tâches en parallèle">
+        <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Auto</span>
+        <div id="orch-toggle" class="toggle on"></div>
+      </div>
+
+      <!-- Model -->
       <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2">
         <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Modèle</span>
-        <select id="chat-model" class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer max-w-[170px]"></select>
+        <select id="chat-model" class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer max-w-[160px]"></select>
+      </div>
+
+      <!-- Export dropdown -->
+      <div class="dropdown">
+        <button id="export-btn" class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition">
+          <span>📤</span><span class="hidden sm:inline">Exporter</span>
+        </button>
+        <div id="export-menu" class="dropdown-menu">
+          <div class="dropdown-item" data-export="md"><span class="icon">📄</span> Markdown (.md)</div>
+          <div class="dropdown-item" data-export="json"><span class="icon">🔧</span> JSON (.json)</div>
+          <div class="dropdown-item" data-export="zip"><span class="icon">📦</span> Tous les fichiers (.zip)</div>
+          <div class="dropdown-item" data-export="txt"><span class="icon">📝</span> Texte brut (.txt)</div>
+        </div>
       </div>
     </header>
 
@@ -173,269 +307,140 @@
     <footer class="glass border-t border-slate-800/80 p-3 sm:p-4">
       <div class="max-w-4xl mx-auto w-full">
         <div id="attachment-preview" class="hidden mb-2"></div>
+
         <div class="flex items-end gap-2 bg-slate-900/90 border border-slate-700/60 rounded-2xl p-2 shadow-2xl focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-500/20 transition">
-          <button id="attach-btn" title="Joindre une image" class="p-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition text-base flex-shrink-0">📎</button>
-          <input type="file" id="file-input" accept="image/*" class="hidden">
-          <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none resize-none py-2.5 px-2 text-sm max-h-40 min-w-0" placeholder="Décris ce que tu veux. L'orchestrateur choisira les IA (texte, image, vidéo...)..."></textarea>
-          <button onclick="sendMessage()" id="send-btn" class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold px-4 sm:px-5 py-2.5 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-95 disabled:opacity-50 flex-shrink-0">
-            Envoyer
+          <button id="attach-btn" title="Joindre un fichier texte" class="p-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition text-base flex-shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <input type="file" id="file-input" class="hidden"
+                 accept=".txt,.md,.json,.js,.ts,.jsx,.tsx,.py,.rb,.php,.java,.c,.cpp,.cs,.go,.rs,.swift,.kt,.sql,.sh,.bash,.yml,.yaml,.xml,.csv,.log,.ini,.toml,.env,.vue,.svelte,.html,.css,.scss,.less">
+
+          <textarea id="user-input" rows="1"
+                    class="flex-1 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none resize-none py-2.5 px-2 text-sm max-h-40 min-w-0"
+                    placeholder="Demande une réponse, du code, un fichier... (Entrée = envoyer, Maj+Entrée = nouvelle ligne)"></textarea>
+
+          <button onclick="sendMessage()" id="send-btn"
+                  class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold px-4 sm:px-5 py-2.5 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center gap-2">
+            <span class="hidden sm:inline">Envoyer</span>
+            <span>➤</span>
           </button>
         </div>
-        <div class="text-[10.5px] text-slate-500 text-center mt-2">
-          Mode Auto : 1 prompt → plan multi-tâches → exécution parallèle → synthèse finale
+
+        <div class="flex items-center justify-between mt-2 text-[10.5px] text-slate-500 px-1">
+          <div class="flex items-center gap-3">
+            <span id="char-count">0 caractère</span>
+            <span id="msg-count">0 message</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span>📎 Fichiers texte acceptés</span>
+          </div>
         </div>
       </div>
     </footer>
   </section>
 
-  <!-- ============ IMAGE ============ -->
-  <section id="view-image" class="view flex-1 flex-col min-h-0">
+  <!-- ============ HISTORY VIEW ============ -->
+  <section id="view-history" class="view flex-1 flex-col min-h-0">
     <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3 flex-wrap">
-      <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎨</span> Générateur d'images</h2>
+      <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>📚</span> Historique des conversations</h2>
       <div class="flex-1"></div>
-      <button id="img-download" disabled class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">⬇️ Télécharger</button>
+      <input type="text" id="history-search" placeholder="Rechercher..." class="input !w-48 !py-1.5 !text-xs">
     </header>
-
-    <div class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-      <div class="w-full lg:w-80 flex-shrink-0 border-b lg:border-b-0 lg:border-r border-slate-800/80 overflow-y-auto p-4 space-y-4 max-h-[45vh] lg:max-h-none">
-        <div class="field">
-          <label>Prompt</label>
-          <textarea id="img-prompt" rows="4" class="input resize-none" placeholder="Un chat astronaute flottant dans une nébuleuse, ultra détaillé, cinématographique..."></textarea>
-        </div>
-        <div class="field">
-          <label>Modèle</label>
-          <select id="img-model" class="input"></select>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="field"><label>Largeur</label>
-            <select id="img-w" class="input"><option>512</option><option>768</option><option selected>1024</option><option>1280</option><option>1536</option></select>
-          </div>
-          <div class="field"><label>Hauteur</label>
-            <select id="img-h" class="input"><option>512</option><option>768</option><option selected>1024</option><option>1280</option><option>1536</option></select>
-          </div>
-        </div>
-        <div class="field">
-          <label>Format</label>
-          <div class="flex flex-wrap gap-1.5" id="ratio-chips">
-            <span class="chip" data-w="1024" data-h="1024">◻️ 1:1</span>
-            <span class="chip" data-w="832"  data-h="1216">▯ 2:3</span>
-            <span class="chip" data-w="1216" data-h="832">▭ 3:2</span>
-            <span class="chip" data-w="768"  data-h="1344">📱 9:16</span>
-            <span class="chip" data-w="1344" data-h="768">🖥️ 16:9</span>
-          </div>
-        </div>
-        <div class="field">
-          <label>Style</label>
-          <div class="flex flex-wrap gap-1.5" id="style-chips">
-            <span class="chip active" data-style="">Aucun</span>
-            <span class="chip" data-style=", photographie réaliste, 8k, éclairage cinématographique">📷 Réaliste</span>
-            <span class="chip" data-style=", illustration numérique, art conceptuel">🎨 Digital</span>
-            <span class="chip" data-style=", anime japonais, studio ghibli">🌸 Anime</span>
-            <span class="chip" data-style=", peinture à l'huile, renaissance">🖼️ Peinture</span>
-            <span class="chip" data-style=", rendu 3D, blender, octane render">🧊 3D</span>
-            <span class="chip" data-style=", pixel art, 16 bits">👾 Pixel</span>
-          </div>
-        </div>
-        <div class="field">
-          <label>Graine (optionnel)</label>
-          <input type="number" id="img-seed" class="input" placeholder="Aléatoire">
-        </div>
-        <button id="img-generate" class="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-[.98]">
-          ✨ Générer l'image
-        </button>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-4 min-w-0">
-        <div id="img-stage" class="min-h-[340px] rounded-2xl border border-dashed border-slate-700/80 flex items-center justify-center p-4 bg-gradient-to-b from-cyan-500/[.04] to-transparent relative overflow-hidden">
-          <div class="text-center text-slate-500 text-sm leading-relaxed">
-            <div class="text-4xl mb-3">🎨</div>
-            Décris ton image et clique sur <b class="text-slate-300">Générer</b><br>
-            <span class="text-xs">Gratuit · Illimité · Sans inscription</span>
-          </div>
-        </div>
-        <div id="img-gallery-wrap" class="hidden mt-6">
-          <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Galerie de la session</h3>
-          <div id="img-gallery" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ VIDEO ============ -->
-  <section id="view-video" class="view flex-1 flex-col min-h-0">
-    <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3 flex-wrap">
-      <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎬</span> Générateur de vidéo</h2>
-      <div class="flex-1"></div>
-      <button id="vid-download" disabled class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">⬇️ Télécharger WebM</button>
-    </header>
-
-    <div class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-      <div class="w-full lg:w-80 flex-shrink-0 border-b lg:border-b-0 lg:border-r border-slate-800/80 overflow-y-auto p-4 space-y-4 max-h-[45vh] lg:max-h-none">
-        <div class="field">
-          <label>Prompt</label>
-          <textarea id="vid-prompt" rows="4" class="input resize-none" placeholder="Voyage à travers une galaxie de cristal, mouvements fluides, néons..."></textarea>
-        </div>
-        <div class="field">
-          <label>Modèle d'image</label>
-          <select id="vid-model" class="input"></select>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="field"><label>Images</label>
-            <select id="vid-frames" class="input"><option>6</option><option selected>10</option><option>14</option><option>20</option></select>
-          </div>
-          <div class="field"><label>Durée (s)</label>
-            <select id="vid-duration" class="input"><option>2</option><option selected>3</option><option>4</option><option>6</option></select>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div class="field"><label>Largeur</label>
-            <select id="vid-w" class="input"><option>512</option><option selected>768</option><option>1024</option></select>
-          </div>
-          <div class="field"><label>Hauteur</label>
-            <select id="vid-h" class="input"><option>512</option><option selected>768</option><option>1024</option></select>
-          </div>
-        </div>
-        <div class="field">
-          <label>Mouvement</label>
-          <div class="flex flex-wrap gap-1.5" id="motion-chips">
-            <span class="chip active" data-motion="1">🚶 Fluide</span>
-            <span class="chip" data-motion="2">🌀 Intense</span>
-            <span class="chip" data-motion="0.4">🧘 Subtil</span>
-          </div>
-        </div>
-        <button id="vid-generate" class="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-[.98]">
-          🎬 Générer la vidéo
-        </button>
-        <p class="text-[11px] text-slate-500 leading-relaxed">
-          Génère plusieurs images puis les anime et les encode en WebM dans ton navigateur.
-        </p>
-      </div>
-
-      <div class="flex-1 overflow-y-auto p-4 min-w-0">
-        <div id="vid-stage" class="min-h-[340px] rounded-2xl border border-dashed border-slate-700/80 flex items-center justify-center p-4 bg-gradient-to-b from-indigo-500/[.04] to-transparent relative overflow-hidden">
-          <div class="text-center text-slate-500 text-sm leading-relaxed">
-            <div class="text-4xl mb-3">🎬</div>
-            Décris ta vidéo puis clique sur <b class="text-slate-300">Générer</b><br>
-            <span class="text-xs">Export WebM téléchargeable · 100% navigateur</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ VOICE ============ -->
-  <section id="view-voice" class="view flex-1 flex-col min-h-0">
-    <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3">
-      <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎙️</span> Voix</h2>
-      <span class="text-[11px] text-slate-500">Web Speech API — dans le navigateur</span>
-    </header>
-
     <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-5xl mx-auto">
-        <div class="glass border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">🎙️ Reconnaissance vocale</h3>
-            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Dicte ton texte, il sera transcrit automatiquement.</p>
-          </div>
-          <button id="mic-btn" class="w-20 h-20 rounded-full bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center text-3xl transition mx-auto active:scale-95">🎙️</button>
-          <div id="transcript" class="min-h-[90px] bg-black/30 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-300 leading-relaxed">Le texte reconnu apparaîtra ici…</div>
-          <button id="use-transcript" class="w-full bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-sm font-medium py-2.5 rounded-xl transition">
-            ➤ Envoyer au chat
-          </button>
-        </div>
-
-        <div class="glass border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">🔊 Synthèse vocale</h3>
-            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Fais lire n'importe quel texte à voix haute.</p>
-          </div>
-          <textarea id="tts-text" rows="4" class="input resize-none" placeholder="Texte à lire…"></textarea>
-          <div class="field"><label>Voix</label><select id="tts-voice" class="input"></select></div>
-          <div class="grid grid-cols-2 gap-2">
-            <div class="field"><label>Vitesse</label><input type="number" id="tts-rate" value="1" min="0.5" max="2" step="0.1" class="input"></div>
-            <div class="field"><label>Tonalité</label><input type="number" id="tts-pitch" value="1" min="0" max="2" step="0.1" class="input"></div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <button id="tts-speak" class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-2.5 rounded-xl transition text-sm shadow-lg shadow-cyan-600/30">▶️ Lire</button>
-            <button id="tts-stop" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-medium py-2.5 rounded-xl transition text-sm">⏹️ Stop</button>
-          </div>
-        </div>
-      </div>
+      <div id="history-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto"></div>
     </div>
   </section>
 
-  <!-- ============ SETTINGS ============ -->
+  <!-- ============ SETTINGS VIEW ============ -->
   <section id="view-settings" class="view flex-1 flex-col min-h-0">
     <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3">
       <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>⚙️</span> Paramètres</h2>
     </header>
     <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-      <div class="max-w-2xl mx-auto space-y-4">
+      <div class="max-w-3xl mx-auto space-y-4">
+
         <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-4">
-          <h3 class="text-sm font-bold text-white">Orchestrateur</h3>
-          <div class="field">
-            <label>Modèle du planificateur (doit renvoyer du JSON)</label>
-            <select id="set-orch-model" class="input"></select>
+          <div>
+            <h3 class="text-sm font-bold text-white">Modèles par défaut</h3>
+            <p class="text-xs text-slate-500 mt-1">Ces modèles seront utilisés pour les nouvelles conversations.</p>
           </div>
-          <div class="field">
-            <label>Modèle de synthèse finale</label>
-            <select id="set-synth-model" class="input"></select>
-          </div>
-          <div class="field">
-            <label>Max sous-tâches par requête</label>
-            <input type="number" id="set-max-tasks" value="4" min="1" max="6" class="input">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="field">
+              <label>Chat général</label>
+              <select id="set-text-model" class="input"></select>
+            </div>
+            <div class="field">
+              <label>Planificateur (orchestrateur)</label>
+              <select id="set-orch-model" class="input"></select>
+            </div>
+            <div class="field">
+              <label>Synthèse finale</label>
+              <select id="set-synth-model" class="input"></select>
+            </div>
+            <div class="field">
+              <label>Tâches max par requête (1-6)</label>
+              <input type="number" id="set-max-tasks" value="4" min="1" max="6" class="input">
+            </div>
           </div>
         </div>
 
         <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-4">
-          <h3 class="text-sm font-bold text-white">Défauts</h3>
-          <div class="field"><label>Modèle de chat par défaut</label><select id="set-text-model" class="input"></select></div>
-          <div class="field"><label>Modèle d'image par défaut</label><select id="set-image-model" class="input"></select></div>
-          <div class="field">
-            <label>Prompt système</label>
-            <textarea id="set-system" rows="3" class="input resize-none" placeholder="Tu es un assistant IA utile…"></textarea>
+          <div>
+            <h3 class="text-sm font-bold text-white">Prompt système</h3>
+            <p class="text-xs text-slate-500 mt-1">Définit la personnalité et les règles de l'assistant.</p>
+          </div>
+          <div class="flex flex-wrap gap-1.5" id="system-presets"></div>
+          <textarea id="set-system" rows="5" class="input"
+                    placeholder="Tu es un assistant IA utile, précis et concis..."></textarea>
+        </div>
+
+        <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-4">
+          <div>
+            <h3 class="text-sm font-bold text-white">Génération</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="field">
+              <label>Température (<span id="temp-val">0.7</span>)</label>
+              <input type="range" id="set-temp" min="0" max="1.5" step="0.1" value="0.7"
+                     class="w-full accent-cyan-500">
+            </div>
+            <div class="field">
+              <label>Tokens max (<span id="tokens-val">4096</span>)</label>
+              <input type="range" id="set-tokens" min="512" max="8192" step="256" value="4096"
+                     class="w-full accent-cyan-500">
+            </div>
           </div>
         </div>
 
         <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-3">
           <h3 class="text-sm font-bold text-white">Données</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">Conversations stockées localement. Rien n'est envoyé à un serveur tiers.</p>
-          <div class="flex gap-2">
-            <button id="export-btn" class="flex-1 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium py-2.5 rounded-xl transition">⬇️ Exporter</button>
-            <button id="clear-all-btn" class="flex-1 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-200 text-xs font-medium py-2.5 rounded-xl transition">🗑️ Tout effacer</button>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Tes conversations sont stockées localement dans ton navigateur. Rien n'est envoyé à un serveur tiers.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <button id="export-all-btn" class="flex-1 min-w-[140px] bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium py-2.5 rounded-xl transition">
+              ⬇️ Exporter tout (.json)
+            </button>
+            <button id="clear-all-btn" class="flex-1 min-w-[140px] bg-rose-900/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-200 text-xs font-medium py-2.5 rounded-xl transition">
+              🗑️ Effacer tout
+            </button>
           </div>
         </div>
 
         <div class="glass border border-slate-800/80 rounded-2xl p-5 text-xs text-slate-400 leading-relaxed space-y-2">
-          <p class="font-bold text-slate-300">💡 Comment fonctionne l'orchestrateur ?</p>
-          <p><b>1.</b> Ton prompt est envoyé à un <b>planificateur</b> qui analyse l'intention.</p>
-          <p><b>2.</b> Il produit un plan JSON listant des sous-tâches (<span class="badge badge-cyan">texte</span> <span class="badge badge-pink">image</span> <span class="badge badge-violet">vidéo</span> <span class="badge badge-amber">code</span>).</p>
-          <p><b>3.</b> Les sous-tâches s'exécutent en <b>parallèle</b> sur les meilleurs modèles pour chaque type.</p>
-          <p><b>4.</b> Un <b>synthétiseur</b> combine tous les résultats en une réponse finale cohérente.</p>
+          <p class="font-bold text-slate-300">💡 Comment ça marche</p>
+          <p>Cet outil utilise les <b>API publiques de Pollinations</b> — gratuites, sans clé. Chaque code block généré par l'IA peut être <b>téléchargé individuellement</b>, et tu peux exporter <b>tous les fichiers d'une conversation en ZIP</b>.</p>
+          <p>Le mode <b>Auto (orchestrateur)</b> analyse ta demande, détecte si elle nécessite plusieurs sous-tâches (code + explication, comparaison, traduction + réécriture...) et les exécute en parallèle sur les meilleurs modèles.</p>
+          <p class="text-slate-500">⚠️ Si tu ouvres ce fichier en <b>file://</b>, certains navigateurs peuvent bloquer les requêtes réseau. Utilise un petit serveur local (<code class="inline-code">python -m http.server</code>) pour une fiabilité maximale.</p>
         </div>
+
       </div>
     </div>
   </section>
 
 </main>
 
-<!-- ==================== MODALS ==================== -->
-<div id="history-modal" class="modal-backdrop">
-  <div class="glass border border-slate-700/80 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in">
-    <div class="flex items-center justify-between p-4 border-b border-slate-800/80">
-      <h3 class="text-sm font-bold text-white">📚 Historique</h3>
-      <button onclick="closeHistory()" class="text-slate-400 hover:text-white text-xl px-2 leading-none">×</button>
-    </div>
-    <div id="history-list" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
-  </div>
-</div>
-
-<div id="lightbox" class="modal-backdrop">
-  <div class="max-w-4xl max-h-[90vh] flex items-center justify-center">
-    <img id="lightbox-img" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl" />
-  </div>
-</div>
-
+<!-- ==================== TOASTS ==================== -->
 <div id="toasts" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
 <!-- ==================== SCRIPT ==================== -->
@@ -444,60 +449,143 @@
    CONSTANTES
    ============================================================ */
 const TEXT_MODELS = [
-  { id:'openai',        name:'GPT-4o mini', tag:'general' },
-  { id:'openai-fast',   name:'OpenAI Fast ⚡', tag:'fast' },
-  { id:'openai-large',  name:'OpenAI Large 🧠', tag:'reasoning' },
-  { id:'mistral',       name:'Mistral 7B 🇪🇺', tag:'general' },
-  { id:'llama',         name:'Llama 3', tag:'general' },
-  { id:'qwen-coder',    name:'Qwen Coder 💻', tag:'code' },
-  { id:'deepseek',      name:'DeepSeek R1', tag:'reasoning' },
-  { id:'deepseek-r1',   name:'DeepSeek Reasoning', tag:'reasoning' },
-  { id:'phi',           name:'Phi-4', tag:'reasoning' },
-  { id:'gemini',        name:'Gemini 2.0 Flash', tag:'general' },
-  { id:'gemini-fast',   name:'Gemini Flash ⚡', tag:'fast' },
-  { id:'nova-fast',     name:'Nova Fast', tag:'fast' },
+  { id:'openai',        name:'GPT-4o mini',          tag:'general',   icon:'🧠' },
+  { id:'openai-fast',   name:'OpenAI Fast',           tag:'fast',      icon:'⚡' },
+  { id:'openai-large',  name:'OpenAI Large',          tag:'reasoning', icon:'🧠' },
+  { id:'mistral',       name:'Mistral 7B',            tag:'general',   icon:'🌍' },
+  { id:'llama',         name:'Llama 3',               tag:'general',   icon:'🦙' },
+  { id:'qwen-coder',    name:'Qwen Coder',            tag:'code',      icon:'💻' },
+  { id:'deepseek',      name:'DeepSeek R1',           tag:'reasoning', icon:'🔍' },
+  { id:'deepseek-r1',   name:'DeepSeek Reasoning',    tag:'reasoning', icon:'🔬' },
+  { id:'phi',           name:'Phi-4',                 tag:'reasoning', icon:'🧮' },
+  { id:'gemini',        name:'Gemini 2.0 Flash',      tag:'general',   icon:'✨' },
+  { id:'gemini-fast',   name:'Gemini Flash',          tag:'fast',      icon:'⚡' },
+  { id:'nova-fast',     name:'Nova Fast',             tag:'fast',      icon:'💫' },
 ];
 
-const IMAGE_MODELS = [
-  { id:'flux',         name:'FLUX — haute qualité' },
-  { id:'turbo',        name:'Turbo — ultra rapide ⚡' },
-  { id:'kontext',      name:'Kontext — créatif' },
-  { id:'flux-realism', name:'FLUX Realism 📷' },
-  { id:'flux-anime',   name:'FLUX Anime 🌸' },
-  { id:'flux-3d',      name:'FLUX 3D 🧊' },
+const TAG_LABELS = {
+  general:   '🌐 Généralistes',
+  fast:      '⚡ Rapides',
+  reasoning: '🧠 Raisonnement',
+  code:      '💻 Code',
+};
+
+const SYSTEM_PRESETS = [
+  { id:'default', name:'🎯 Assistant général',
+    prompt:"Tu es un assistant IA utile, précis et concis. Réponds en français par défaut. Utilise du markdown quand c'est pertinent (titres, listes, code, tableaux). Sois direct et va à l'essentiel." },
+  { id:'developer', name:'💻 Développeur senior',
+    prompt:"Tu es un développeur senior expérimenté. Tu écris du code propre, idiomatique, commenté quand nécessaire. Tu expliques tes choix techniques brièvement. Tu utilises toujours des blocs de code avec le langage précis. Quand tu génères un fichier, commence le bloc par un commentaire `# filename: nom.ext` (ou `// filename:` selon le langage)." },
+  { id:'writer', name:'✍️ Écrivain créatif',
+    prompt:"Tu es un écrivain talentueux à la prose élégante et évocatrice. Tu maîtrises le rythme, les images, les métaphores. Tu adaptes ton style à la demande (roman, essai, poésie, scénario). Tu soignes chaque phrase." },
+  { id:'analyst', name:'📊 Analyste / chercheur',
+    prompt:"Tu es un analyste rigoureux. Tu structures tes réponses avec des arguments clairs, tu cites tes sources quand c'est pertinent, tu distingues les faits des hypothèses, tu présentes les nuances et les contre-arguments. Tu utilises des tableaux comparatifs quand c'est utile." },
+  { id:'translator', name:'🌍 Traducteur professionnel',
+    prompt:"Tu es un traducteur professionnel bilingue. Tu traduis avec précision en conservant le ton, le registre et les nuances. Si un terme n'a pas d'équivalent exact, tu le signales entre parenthèses. Tu peux aussi expliquer tes choix de traduction si on te le demande." },
+  { id:'teacher', name:'📚 Pédagogue',
+    prompt:"Tu es un excellent professeur. Tu expliques les concepts complexes de manière simple, avec des analogies et des exemples concrets. Tu structures tes explications du plus simple au plus complexe. Tu proposes souvent un exemple, puis un exercice." },
+  { id:'business', name:'💼 Business / stratégie',
+    prompt:"Tu es un consultant en stratégie. Tu analyses les situations business avec pragmatisme, tu identifies les enjeux clés, tu proposes des recommandations actionnables, tu utilises des frameworks reconnus (SWOT, Porter, etc.) quand c'est pertinent." },
+  { id:'custom', name:'⚙️ Personnalisé',
+    prompt:'' },
 ];
 
-const STORAGE_KEY = 'nexus_orchestrator_v3';
+const LANG_EXT = {
+  python:'py', py:'py', python3:'py',
+  javascript:'js', js:'js', node:'js',
+  typescript:'ts', ts:'ts',
+  jsx:'jsx', tsx:'tsx',
+  html:'html', htm:'html',
+  css:'css', scss:'scss', sass:'scss', less:'less',
+  json:'json', jsonc:'json', json5:'json',
+  yaml:'yml', yml:'yml',
+  toml:'toml', ini:'ini', env:'env',
+  xml:'xml', svg:'svg',
+  sql:'sql', mysql:'sql', postgresql:'sql', postgres:'sql', sqlite:'sql',
+  bash:'sh', sh:'sh', shell:'sh', zsh:'sh', powershell:'ps1', ps1:'ps1',
+  java:'java', kotlin:'kt', kt:'kt', scala:'scala', groovy:'groovy',
+  c:'c', h:'h', cpp:'cpp', 'c++':'cpp', cc:'cpp', cxx:'cpp', hpp:'hpp',
+  csharp:'cs', cs:'cs', 'c#':'cs',
+  go:'go', golang:'go',
+  rust:'rs', rs:'rs',
+  ruby:'rb', rb:'rb',
+  php:'php',
+  swift:'swift',
+  dart:'dart',
+  r:'r', matlab:'m',
+  perl:'pl', pl:'pl',
+  lua:'lua',
+  haskell:'hs', hs:'hs',
+  elixir:'ex', ex:'ex', exs:'exs',
+  clojure:'clj', clj:'clj',
+  vue:'vue', svelte:'svelte',
+  dockerfile:'Dockerfile', docker:'Dockerfile',
+  makefile:'Makefile', make:'Makefile',
+  cmake:'cmake',
+  nginx:'conf',
+  apache:'conf',
+  graphql:'graphql', gql:'graphql',
+  markdown:'md', md:'md',
+  text:'txt', txt:'txt', plaintext:'txt', plain:'txt',
+  diff:'diff', patch:'patch',
+  http:'http',
+  regex:'regex',
+  ascii:'txt',
+  log:'log',
+};
+
+const STORAGE_KEY = 'nexus_text_ai_v1';
 
 /* ============================================================
    STATE
    ============================================================ */
 const state = {
-  view: 'chat',
-  conversations: [],
-  currentId: null,
-  busy: false,
-  imgStyle: '',
-  lastImage: null,
-  lastVideoBlob: null,
-  motion: 1,
-  attachment: null,
-  orchestrator: true,
-  settings: {
-    textModel: 'openai',
-    imageModel: 'flux',
-    orchModel: 'openai-fast',
-    synthModel: 'openai',
-    maxTasks: 4,
-    systemPrompt: "Tu es un assistant IA utile, précis et concis. Réponds en français par défaut. Utilise du markdown quand c'est pertinent."
+  view:'chat',
+  conversations:[],
+  currentId:null,
+  busy:false,
+  attachment:null,
+  orchestrator:true,
+  searchQuery:'',
+  settings:{
+    textModel:'openai',
+    orchModel:'openai-fast',
+    synthModel:'openai',
+    maxTasks:4,
+    temperature:0.7,
+    maxTokens:4096,
+    systemPrompt:SYSTEM_PRESETS[0].prompt,
+    systemPreset:'default',
   }
 };
 
 /* ============================================================
-   UTILITAIRES
+   UTILS
    ============================================================ */
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function escapeHTML(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatBytes(b){
+  if (b < 1024) return b + ' o';
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' Ko';
+  return (b/1024/1024).toFixed(2) + ' Mo';
+}
+
+function formatDate(ts){
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return "à l'instant";
+  if (diff < 3600000) return `il y a ${Math.floor(diff/60000)} min`;
+  if (diff < 86400000) return `il y a ${Math.floor(diff/3600000)} h`;
+  if (diff < 604800000) return `il y a ${Math.floor(diff/86400000)} j`;
+  return d.toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
+}
 
 function toast(msg, type = ''){
   const colors = {
@@ -515,60 +603,139 @@ function toast(msg, type = ''){
     el.style.opacity = '0';
     el.style.transform = 'translateX(30px)';
     setTimeout(() => el.remove(), 320);
-  }, 3600);
+  }, 3400);
 }
 
-function escapeHTML(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
-
-function renderMarkdown(text){
-  let h = escapeHTML(text);
-  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
-    `<pre><code>${code.replace(/\n$/,'')}</code></pre>`);
-  h = h.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
-  h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  h = h.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
-  h = h.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
-  h = h.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
-  h = h.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
-  h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  h = h.replace(/^\s*[-*] (.+)$/gm, '<li>$1</li>');
-  h = h.replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, '<ul>$1</ul>');
-  h = h.split(/\n{2,}/).map(block => {
-    if (/^\s*<(ul|ol|pre|h[1-3]|li)/.test(block)) return block;
-    return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
-  }).join('');
-  return h;
-}
-
-function extractJSON(text){
-  // Enlève les ```json ... ``` si présents
-  let t = text.trim();
-  t = t.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
-  // Trouve le premier { et le dernier }
-  const start = t.indexOf('{');
-  const end = t.lastIndexOf('}');
-  if (start === -1 || end === -1) throw new Error('Pas de JSON trouvé');
-  return JSON.parse(t.slice(start, end + 1));
+function debounce(fn, ms){
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
 }
 
 /* ============================================================
-   PERSISTANCE
+   MARKDOWN + CODE RENDERING
    ============================================================ */
-function saveState(){
+marked.setOptions({
+  gfm:true,
+  breaks:true,
+  headerIds:false,
+  mangle:false,
+});
+
+function renderMarkdown(text){
+  const rawHtml = marked.parse(text || '');
+  const clean = DOMPurify.sanitize(rawHtml, {
+    ADD_ATTR:['target', 'rel', 'class', 'data-lang'],
+  });
+  return clean;
+}
+
+function renderContentInto(el, text, force = false){
+  el.innerHTML = renderMarkdown(text);
+  enhanceCodeBlocks(el);
+}
+
+function enhanceCodeBlocks(container){
+  container.querySelectorAll('pre > code').forEach(codeEl => {
+    const pre = codeEl.parentElement;
+    if (pre.parentElement.classList.contains('code-block')) return;
+
+    let lang = 'text';
+    const cls = [...codeEl.classList].find(c => c.startsWith('language-'));
+    if (cls) lang = cls.replace('language-', '').toLowerCase();
+
+    // Highlight
+    try {
+      if (lang !== 'text' && hljs.getLanguage(lang)){
+        codeEl.innerHTML = hljs.highlight(codeEl.textContent, { language: lang, ignoreIllegals:true }).value;
+      } else {
+        codeEl.innerHTML = hljs.highlight(codeEl.textContent, { language: 'plaintext', ignoreIllegals:true }).value;
+      }
+    } catch(_){
+      // Fallback : texte brut
+    }
+    codeEl.classList.add('hljs');
+
+    // Container
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    wrapper.dataset.lang = lang;
+
+    const header = document.createElement('div');
+    header.className = 'code-header';
+    header.innerHTML = `
+      <span class="code-lang">${escapeHTML(lang)}</span>
+      <div class="code-actions">
+        <button class="copy-code" title="Copier le code">📋 Copier</button>
+        <button class="download-code" title="Télécharger comme fichier">⬇️ Fichier</button>
+      </div>`;
+
+    pre.parentNode.insertBefore(wrapper, pre);
+    wrapper.appendChild(header);
+    wrapper.appendChild(pre);
+
+    const codeText = codeEl.textContent;
+
+    header.querySelector('.copy-code').addEventListener('click', (e) => {
+      navigator.clipboard.writeText(codeText).then(() => {
+        const btn = e.currentTarget;
+        const old = btn.innerHTML;
+        btn.innerHTML = '✅ Copié';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.innerHTML = old; btn.classList.remove('copied'); }, 1500);
+      }).catch(() => toast('Copie impossible', 'err'));
+    });
+
+    header.querySelector('.download-code').addEventListener('click', () => {
+      downloadCodeBlock(codeText, lang);
+    });
+  });
+
+  // Enhance links to open in new tab
+  container.querySelectorAll('a').forEach(a => {
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+  });
+}
+
+function extractFilename(code, lang){
+  const lines = code.split('\n').slice(0, 4);
+  const re = /(?:\/\/|#|--|;|<!--|\/\*)\s*(?:filename|file|name)\s*[:=]\s*([\w\-./]+)/i;
+  for (const line of lines){
+    const m = line.match(re);
+    if (m) return m[1].replace(/^[./]+/, ''); // strip leading ./ 
+  }
+  const ext = LANG_EXT[lang] || LANG_EXT[lang?.toLowerCase()] || 'txt';
+  return `code-${Date.now()}.${ext}`;
+}
+
+function downloadCodeBlock(code, lang){
+  const filename = extractFilename(code, lang);
+  const blob = new Blob([code], { type:'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100);
+  toast(`📥 ${filename}`, 'ok');
+}
+
+/* ============================================================
+   STORAGE
+   ============================================================ */
+const saveState = debounce(() => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       conversations: state.conversations,
       currentId: state.currentId,
       settings: state.settings,
-      orchestrator: state.orchestrator
+      orchestrator: state.orchestrator,
     }));
   } catch(e){ console.warn('save failed', e); }
-}
+}, 400);
 
 function loadState(){
   try {
@@ -595,290 +762,515 @@ function switchView(name){
   $$('.view').forEach(el => el.classList.remove('active'));
   const v = document.getElementById('view-' + name);
   if (v) v.classList.add('active');
+  if (name === 'history') renderHistoryGrid();
+  if (name === 'chat') setTimeout(() => promptInput.focus(), 50);
 }
-
-/* ============================================================
-   IMAGE / VIDEO — chargement robuste via fetch + blob
-   ============================================================ */
-async function fetchImageBlob(url, timeoutMs = 45000){
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { signal: ctrl.signal, mode: 'cors' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const blob = await res.blob();
-    if (!blob.type.startsWith('image/')) throw new Error('Réponse non-image');
-    return blob;
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-async function fetchImageBlobWithRetry(url, retries = 2){
-  let lastErr;
-  for (let i = 0; i <= retries; i++){
-    try {
-      return await fetchImageBlob(url);
-    } catch(e){
-      lastErr = e;
-      console.warn(`Tentative ${i+1} échouée:`, e.message);
-      if (i < retries) await new Promise(r => setTimeout(r, 800 * (i + 1)));
-    }
-  }
-  throw lastErr;
-}
-
-function buildImageURL(prompt, { width, height, seed, model }){
-  const p = encodeURIComponent(prompt);
-  const s = seed ?? Math.floor(Math.random() * 1e9);
-  return `https://image.pollinations.ai/prompt/${p}?width=${width}&height=${height}&seed=${s}&model=${model}&nologo=true&referrer=nexus-orchestrator`;
-}
-
-function blobToObjectURL(blob){ return URL.createObjectURL(blob); }
 
 /* ============================================================
    CONVERSATIONS
    ============================================================ */
 function newConversation(){
-  const conv = { id: uid(), title: 'Nouvelle conversation', messages: [], createdAt: Date.now() };
+  const conv = {
+    id: uid(),
+    title: 'Nouvelle conversation',
+    messages: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
   state.conversations.unshift(conv);
   state.currentId = conv.id;
   saveState();
   renderChat();
+  renderHistoryGrid();
+  if (state.view !== 'chat') switchView('chat');
 }
 
-function getCurrent(){ return state.conversations.find(c => c.id === state.currentId); }
+function getCurrent(){
+  return state.conversations.find(c => c.id === state.currentId);
+}
 
 function selectConversation(id){
   state.currentId = id;
   saveState();
-  closeHistory();
   renderChat();
+  switchView('chat');
 }
 
 function deleteConversation(id, ev){
   ev && ev.stopPropagation();
+  if (!confirm('Supprimer cette conversation ?')) return;
   state.conversations = state.conversations.filter(c => c.id !== id);
-  if (state.currentId === id) state.currentId = state.conversations[0]?.id || null;
+  if (state.currentId === id){
+    state.currentId = state.conversations[0]?.id || null;
+  }
   if (!state.currentId) newConversation();
-  else { saveState(); renderChat(); renderHistoryList(); }
+  else { saveState(); renderChat(); renderHistoryGrid(); }
+  toast('Conversation supprimée', 'ok');
 }
 
-function renderHistoryList(){
-  const list = $('#history-list');
-  if (!list) return;
-  if (!state.conversations.length){
-    list.innerHTML = `<div class="text-center text-slate-500 text-sm py-8">Aucune conversation.</div>`;
-    return;
-  }
-  list.innerHTML = '';
-  state.conversations.forEach(c => {
-    const el = document.createElement('div');
-    el.className = `group flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition ${c.id === state.currentId ? 'bg-cyan-500/10 border-cyan-500/40' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}`;
-    const date = new Date(c.createdAt).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-    el.innerHTML = `
-      <div class="flex-1 min-w-0">
-        <div class="text-sm text-slate-200 font-medium truncate">${escapeHTML(c.title)}</div>
-        <div class="text-[11px] text-slate-500 mt-0.5">${date} · ${c.messages.length} messages</div>
+function updateConversationTitle(conv, firstMessage){
+  if (conv.title !== 'Nouvelle conversation') return;
+  const clean = firstMessage.trim().replace(/\s+/g, ' ');
+  conv.title = clean.slice(0, 60) + (clean.length > 60 ? '…' : '');
+  $('#chat-title').textContent = conv.title;
+}
+
+/* ============================================================
+   RENDER — EMPTY STATE
+   ============================================================ */
+const EXAMPLE_PROMPTS = [
+  { icon:'💻', text:'Génère un fichier Python qui parse un CSV et génère des statistiques' },
+  { icon:'🧠', text:'Explique-moi les closures en JavaScript avec des exemples progressifs' },
+  { icon:'✍️', text:'Écris un essai de 500 mots sur l\'impact de l\'IA sur l\'éducation' },
+  { icon:'⚖️', text:'Compare PostgreSQL et MongoDB pour un projet e-commerce' },
+  { icon:'🌍', text:'Traduis ce texte en anglais professionnel : "Nous recherchons un partenaire stratégique..."' },
+  { icon:'🔧', text:'Refactorise ce code pour le rendre plus lisible et performant : [colle ton code]' },
+];
+
+function renderEmptyState(){
+  const box = $('#chat-messages');
+  const examplesHtml = EXAMPLE_PROMPTS.map((e, i) =>
+    `<button class="example-prompt" data-example="${i}">
+      <div class="flex items-start gap-3">
+        <span class="text-lg flex-shrink-0">${e.icon}</span>
+        <span class="text-left">${escapeHTML(e.text)}</span>
       </div>
-      <button class="text-slate-500 hover:text-rose-400 text-lg px-2 opacity-0 group-hover:opacity-100 transition" title="Supprimer">×</button>`;
-    el.addEventListener('click', () => selectConversation(c.id));
-    el.querySelector('button').addEventListener('click', e => deleteConversation(c.id, e));
-    list.appendChild(el);
+    </button>`
+  ).join('');
+
+  box.innerHTML = `
+    <div class="glass border border-slate-800/80 p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in max-w-3xl mx-auto">
+      <div class="absolute -top-12 -right-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2.5 flex items-center gap-2.5 relative">
+        <span>✦</span> Assistant textuel multi-IA
+      </h2>
+      <p class="text-slate-300 text-sm leading-relaxed mb-5 relative">
+        Réponses, code, fichiers, analyses, traductions — tout en texte.
+        <b class="text-white">Active Auto</b> pour que l'IA planifie et exécute plusieurs sous-tâches en parallèle.
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 relative">
+        ${examplesHtml}
+      </div>
+
+      <div class="flex flex-wrap gap-2 mt-5 relative">
+        <span class="badge badge-cyan">💬 Chat streaming</span>
+        <span class="badge badge-emerald">📥 Fichiers téléchargeables</span>
+        <span class="badge badge-violet">🧠 Orchestrateur</span>
+        <span class="badge badge-amber">📦 Export ZIP</span>
+      </div>
+    </div>`;
+
+  box.querySelectorAll('.example-prompt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ex = EXAMPLE_PROMPTS[+btn.dataset.example];
+      promptInput.value = ex.text;
+      autoResize(promptInput);
+      updateCharCount();
+      promptInput.focus();
+    });
   });
 }
 
-function openHistory(){ renderHistoryList(); $('#history-modal').classList.add('show'); }
-function closeHistory(){ $('#history-modal').classList.remove('show'); }
-
 /* ============================================================
-   RENDU CHAT
+   RENDER — CHAT
    ============================================================ */
 function renderChat(){
   const box = $('#chat-messages');
   box.innerHTML = '';
   const conv = getCurrent();
 
-  if (!conv || !conv.messages.length){
-    box.innerHTML = `
-      <div class="glass border border-slate-800/80 p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in max-w-3xl mx-auto">
-        <div class="absolute -top-12 -right-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2.5 flex items-center gap-2.5">
-          <span>🧠</span> Orchestrateur multi-IA
-        </h2>
-        <p class="text-slate-300 text-sm leading-relaxed mb-4">
-          Décris ce que tu veux. <b>Un planificateur IA</b> analyse ta demande, choisit les bons modèles, lance plusieurs sous-tâches en parallèle (texte, image, vidéo, code...) puis un synthétiseur combine tout en une réponse finale.
-        </p>
-        <div class="flex flex-wrap gap-2 mb-4">
-          <span class="badge badge-cyan">💬 Texte</span>
-          <span class="badge badge-pink">🎨 Image</span>
-          <span class="badge badge-violet">🎬 Vidéo</span>
-          <span class="badge badge-amber">💻 Code</span>
-          <span class="badge badge-emerald">🎙️ Voix</span>
-        </div>
-        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-400 leading-relaxed">
-          <p class="font-bold text-slate-300 mb-1.5">Exemples :</p>
-          <p>• « Un logo minimaliste de renard pour ma marque, puis décris-le »</p>
-          <p>• « Écris un poème sur l'océan et génère une image associée »</p>
-          <p>• « Compare React et Vue.js et donne-moi un exemple de code pour chacun »</p>
-        </div>
-      </div>`;
+  if (!conv){
+    newConversation();
     return;
   }
 
-  conv.messages.forEach(m => appendMessageEl(m));
-  box.scrollTop = box.scrollHeight;
-}
+  $('#chat-title').textContent = conv.title;
+  updateSubtitle();
 
-function appendMessageEl(msg){
-  const box = $('#chat-messages');
-  const wrap = document.createElement('div');
-
-  if (msg.role === 'user'){
-    wrap.className = 'flex justify-end animate-fade-in';
-    let imgHtml = '';
-    if (msg.image){
-      imgHtml = `<img src="${msg.image}" class="rounded-xl max-w-full mb-2 border border-slate-700/60 max-h-60 object-cover" />`;
-    }
-    wrap.innerHTML = `
-      <div class="bg-gradient-to-br from-cyan-600 to-indigo-600 text-white px-5 py-3.5 rounded-3xl rounded-tr-sm max-w-2xl shadow-xl text-sm whitespace-pre-wrap leading-relaxed font-medium">
-        ${imgHtml}${escapeHTML(msg.content)}
-      </div>`;
-  } else {
-    wrap.className = 'flex justify-start animate-fade-in';
-    const inner = document.createElement('div');
-    inner.className = 'glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed min-w-0 break-words w-full';
-
-    // Plan visualizer si présent
-    if (msg.plan && msg.plan.length){
-      const planHtml = msg.plan.map((t, i) => {
-        const icons = { text:'💬', image:'🎨', video:'🎬', code:'💻' };
-        return `<div class="pipeline-step done">
-          <span>${icons[t.type] || '•'}</span>
-          <span class="font-semibold">${t.type}</span>
-          <span class="text-slate-500 truncate">${escapeHTML((t.prompt||'').slice(0,60))}${(t.prompt||'').length>60?'…':''}</span>
-        </div>`;
-      }).join('');
-      inner.innerHTML = `
-        <details class="mb-3" ${msg.showPlan !== false ? 'open' : ''}>
-          <summary class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider cursor-pointer select-none flex items-center gap-1.5">
-            <span>🧠</span> Plan d'exécution · ${msg.plan.length} tâche(s)
-          </summary>
-          <div class="mt-2 space-y-1.5">${planHtml}</div>
-        </details>
-        <div class="content msg-md"></div>
-        <div class="actions mt-3 flex gap-1 opacity-0 transition-opacity"></div>`;
-      box.appendChild(wrap);
-      wrap.appendChild(inner);
-      inner.querySelector('.content').innerHTML = renderMarkdown(msg.content);
-
-      // Rendu des images/vidéos produites
-      if (msg.artifacts && msg.artifacts.length){
-        const art = document.createElement('div');
-        art.className = 'mt-4 space-y-3';
-        msg.artifacts.forEach(a => {
-          if (a.type === 'image'){
-            const div = document.createElement('div');
-            div.className = 'rounded-xl border border-slate-800 bg-slate-950/60 p-2';
-            div.innerHTML = `
-              <div class="flex items-center justify-between mb-1.5 px-1">
-                <span class="badge badge-pink">🎨 Image · ${a.model}</span>
-                <button class="text-[11px] text-slate-400 hover:text-cyan-400">⬇️ Télécharger</button>
-              </div>
-              <img src="${a.url}" class="w-full rounded-lg cursor-zoom-in" />`;
-            div.querySelector('img').addEventListener('click', () => {
-              $('#lightbox-img').src = a.url;
-              $('#lightbox').classList.add('show');
-            });
-            div.querySelector('button').addEventListener('click', () => {
-              const link = document.createElement('a');
-              link.href = a.url;
-              link.download = 'nexus-img-' + Date.now() + '.jpg';
-              link.target = '_blank';
-              link.click();
-            });
-            art.appendChild(div);
-          } else if (a.type === 'video'){
-            const div = document.createElement('div');
-            div.className = 'rounded-xl border border-slate-800 bg-slate-950/60 p-2';
-            div.innerHTML = `
-              <div class="flex items-center justify-between mb-1.5 px-1">
-                <span class="badge badge-violet">🎬 Vidéo · ${a.model}</span>
-                <button class="text-[11px] text-slate-400 hover:text-cyan-400">⬇️ Télécharger</button>
-              </div>
-              <video src="${a.url}" controls autoplay loop class="w-full rounded-lg"></video>`;
-            div.querySelector('button').addEventListener('click', () => {
-              const link = document.createElement('a');
-              link.href = a.url;
-              link.download = 'nexus-video-' + Date.now() + '.webm';
-              link.click();
-            });
-            art.appendChild(div);
-          }
-        });
-        inner.appendChild(art);
-      }
-
-      const acts = inner.querySelector('.actions');
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
-      copyBtn.textContent = '📋 Copier';
-      copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(msg.content);
-        toast('Copié !', 'ok');
-      });
-      acts.appendChild(copyBtn);
-      inner.addEventListener('mouseenter', () => acts.style.opacity = '1');
-      inner.addEventListener('mouseleave', () => acts.style.opacity = '0');
-
-      return;
-    }
-
-    // Message simple
-    inner.innerHTML = `
-      <span class="block text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Assistant</span>
-      <div class="content msg-md"></div>
-      <div class="actions mt-3 flex gap-1 opacity-0 transition-opacity"></div>`;
-    inner.querySelector('.content').innerHTML = renderMarkdown(msg.content);
-    box.appendChild(wrap);
-    wrap.appendChild(inner);
-
-    const acts = inner.querySelector('.actions');
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
-    copyBtn.textContent = '📋 Copier';
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(msg.content);
-      toast('Copié !', 'ok');
-    });
-    acts.appendChild(copyBtn);
-    inner.addEventListener('mouseenter', () => acts.style.opacity = '1');
-    inner.addEventListener('mouseleave', () => acts.style.opacity = '0');
+  if (!conv.messages.length){
+    renderEmptyState();
+    updateCounters();
+    return;
   }
 
-  box.appendChild(wrap);
+  conv.messages.forEach(m => appendMessageEl(m, false));
   box.scrollTop = box.scrollHeight;
+  updateCounters();
+}
+
+function updateSubtitle(){
+  const conv = getCurrent();
+  if (!conv){ $('#chat-subtitle').textContent = ''; return; }
+  const model = TEXT_MODELS.find(m => m.id === state.settings.textModel);
+  const mode = state.orchestrator ? '🧠 Orchestrateur' : '💬 Chat direct';
+  $('#chat-subtitle').textContent = `${mode} · ${model?.name || state.settings.textModel}`;
+}
+
+function updateCounters(){
+  const conv = getCurrent();
+  const msgCount = conv?.messages.length || 0;
+  $('#msg-count').textContent = `${msgCount} message${msgCount > 1 ? 's' : ''}`;
+}
+
+function updateCharCount(){
+  const len = promptInput.value.length;
+  $('#char-count').textContent = `${len} caractère${len > 1 ? 's' : ''}`;
 }
 
 /* ============================================================
-   CHAT — STREAM + FALLBACK
+   RENDER — SINGLE MESSAGE
    ============================================================ */
-async function* streamChat(messages, model){
+function appendMessageEl(msg, animate = true){
+  const box = $('#chat-messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg flex ' + (msg.role === 'user' ? 'justify-end' : 'justify-start');
+  if (animate) wrap.classList.add('animate-fade-in');
+
+  if (msg.role === 'user'){
+    wrap.dataset.msgId = msg.id;
+    wrap.innerHTML = renderUserMessage(msg);
+    attachUserActions(wrap, msg);
+  } else {
+    wrap.dataset.msgId = msg.id;
+    wrap.innerHTML = renderAssistantMessage(msg);
+    attachAssistantActions(wrap, msg);
+    // Enhance code blocks
+    const contentEl = wrap.querySelector('.content');
+    if (contentEl) enhanceCodeBlocks(contentEl);
+  }
+
+  box.appendChild(wrap);
+  return wrap;
+}
+
+function renderUserMessage(msg){
+  let attachmentsHtml = '';
+  if (msg.attachments?.length){
+    attachmentsHtml = msg.attachments.map(a => `
+      <div class="flex items-center gap-2 bg-black/25 border border-white/15 rounded-lg px-3 py-2 mb-2 text-xs">
+        <span>📎</span>
+        <span class="font-medium">${escapeHTML(a.name)}</span>
+        <span class="text-white/60">${formatBytes(a.size)}</span>
+      </div>
+    `).join('');
+  }
+
+  return `
+    <div class="bg-gradient-to-br from-cyan-600 to-indigo-600 text-white px-5 py-3.5 rounded-3xl rounded-tr-sm max-w-2xl shadow-xl text-sm whitespace-pre-wrap leading-relaxed font-medium break-words" style="min-width:0">
+      ${attachmentsHtml}
+      <div class="whitespace-pre-wrap break-words">${escapeHTML(msg.content)}</div>
+    </div>`;
+}
+
+function renderAssistantMessage(msg){
+  // Plan visualization
+  let planHtml = '';
+  if (msg.plan?.length){
+    const icons = { text:'💬', code:'💻', reason:'🧠', write:'✍️', translate:'🌍', summarize:'📋' };
+    const steps = msg.plan.map(t => `
+      <div class="pipeline-step done">
+        <span>${icons[t.type] || '•'}</span>
+        <span class="font-semibold">${escapeHTML(t.type)}</span>
+        <span class="text-slate-500 truncate flex-1 min-w-0 text-[11px]">${escapeHTML((t.prompt||'').slice(0,60))}${(t.prompt||'').length>60?'…':''}</span>
+        <span class="text-[10px]">✅</span>
+      </div>
+    `).join('');
+
+    planHtml = `
+      <details class="mb-3 group" open>
+        <summary class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider cursor-pointer select-none flex items-center gap-1.5 hover:text-cyan-300">
+          <span>🧠</span> Plan d'exécution · ${msg.plan.length} tâche(s)
+          <span class="text-slate-600 group-open:hidden">▶</span>
+          <span class="text-slate-600 hidden group-open:inline">▼</span>
+        </summary>
+        <div class="mt-2 space-y-1.5">${steps}</div>
+      </details>`;
+  }
+
+  const modelBadge = msg.model ? `<span class="badge badge-cyan text-[9px]">${escapeHTML(msg.model)}</span>` : '';
+
+  return `
+    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 leading-relaxed w-full min-w-0">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Assistant</span>
+        ${modelBadge}
+      </div>
+      ${planHtml}
+      <div class="content msg-md">${renderMarkdown(msg.content)}</div>
+      <div class="msg-actions mt-3"></div>
+    </div>`;
+}
+
+function attachUserActions(wrap, msg){
+  const actions = document.createElement('div');
+  actions.className = 'msg-actions mt-2 justify-end';
+  const copyBtn = document.createElement('button');
+  copyBtn.innerHTML = '📋 Copier';
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(msg.content);
+    toast('Copié !', 'ok');
+  });
+  const editBtn = document.createElement('button');
+  editBtn.innerHTML = '✏️ Éditer';
+  editBtn.addEventListener('click', () => editUserMessage(msg));
+  actions.appendChild(copyBtn);
+  actions.appendChild(editBtn);
+
+  const container = wrap.querySelector('div');
+  if (container) container.appendChild(actions);
+}
+
+function attachAssistantActions(wrap, msg){
+  const actions = wrap.querySelector('.msg-actions');
+  if (!actions) return;
+
+  const copyBtn = document.createElement('button');
+  copyBtn.innerHTML = '📋 Copier';
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(msg.content);
+    toast('Copié !', 'ok');
+  });
+
+  const regenBtn = document.createElement('button');
+  regenBtn.innerHTML = '🔄 Régénérer';
+  regenBtn.addEventListener('click', () => regenerateFromMessage(msg.id));
+
+  const continueBtn = document.createElement('button');
+  continueBtn.innerHTML = '⏩ Continuer';
+  continueBtn.addEventListener('click', () => continueGeneration(msg.id));
+
+  const filesBtn = document.createElement('button');
+  filesBtn.innerHTML = '📦 Télécharger les fichiers';
+  filesBtn.addEventListener('click', () => {
+    const blocks = extractCodeBlocksFromMessage(msg);
+    if (!blocks.length){ toast('Aucun fichier à télécharger', 'warn'); return; }
+    blocks.forEach(b => downloadCodeBlock(b.code, b.lang));
+  });
+
+  actions.appendChild(copyBtn);
+  actions.appendChild(regenBtn);
+  actions.appendChild(continueBtn);
+
+  const codeBlocks = extractCodeBlocksFromMessage(msg);
+  if (codeBlocks.length > 1){
+    actions.appendChild(filesBtn);
+  }
+}
+
+function extractCodeBlocksFromMessage(msg){
+  const regex = /```(\w*)\n([\s\S]*?)```/g;
+  const blocks = [];
+  let m;
+  while ((m = regex.exec(msg.content)) !== null){
+    blocks.push({ lang: m[1] || 'text', code: m[2] });
+  }
+  return blocks;
+}
+
+/* ============================================================
+   CHAT — INPUT
+   ============================================================ */
+const promptInput = $('#user-input');
+const sendBtn = $('#send-btn');
+
+function autoResize(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+promptInput.addEventListener('input', () => { autoResize(promptInput); updateCharCount(); });
+promptInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+});
+
+$('#new-chat-btn').addEventListener('click', newConversation);
+
+/* Orchestrator toggle */
+$('#orch-toggle').addEventListener('click', () => {
+  state.orchestrator = !state.orchestrator;
+  $('#orch-toggle').classList.toggle('on', state.orchestrator);
+  $('#chat-model').disabled = state.orchestrator;
+  updateSubtitle();
+  saveState();
+  toast(state.orchestrator ? '🧠 Orchestrateur activé' : '💬 Chat direct', 'ok');
+});
+
+/* Attachment */
+$('#attach-btn').addEventListener('click', () => $('#file-input').click());
+$('#file-input').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 500 * 1024){
+    toast('Fichier trop lourd (max 500 Ko)', 'err');
+    e.target.value = '';
+    return;
+  }
+  try {
+    const text = await file.text();
+    state.attachment = { name: file.name, content: text, size: file.size };
+    renderAttachmentPreview();
+  } catch(err){
+    toast('Impossible de lire le fichier', 'err');
+  }
+  e.target.value = '';
+});
+
+function renderAttachmentPreview(){
+  const box = $('#attachment-preview');
+  if (!state.attachment){ box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="flex items-center gap-3 bg-slate-900/70 border border-slate-700/60 rounded-xl p-2.5 max-w-fit">
+      <span class="text-lg">📎</span>
+      <div class="min-w-0">
+        <div class="text-xs text-slate-200 font-medium truncate max-w-[200px]">${escapeHTML(state.attachment.name)}</div>
+        <div class="text-[10px] text-slate-500">${formatBytes(state.attachment.size)} · ${state.attachment.content.length.toLocaleString('fr-FR')} caractères</div>
+      </div>
+      <button id="remove-attachment" class="text-slate-500 hover:text-rose-400 px-2 text-lg leading-none transition">×</button>
+    </div>`;
+  $('#remove-attachment').addEventListener('click', () => {
+    state.attachment = null;
+    renderAttachmentPreview();
+  });
+}
+
+/* ============================================================
+   CHAT — SEND
+   ============================================================ */
+async function sendMessage(){
+  const text = promptInput.value.trim();
+  if ((!text && !state.attachment) || state.busy) return;
+
+  if (!getCurrent()) newConversation();
+  const conv = getCurrent();
+
+  // Build user message
+  const userMsg = {
+    id: uid(),
+    role: 'user',
+    content: text || '(fichier joint)',
+    attachments: state.attachment ? [state.attachment] : null,
+    timestamp: Date.now(),
+  };
+  conv.messages.push(userMsg);
+  conv.updatedAt = Date.now();
+  updateConversationTitle(conv, text || state.attachment.name);
+
+  // If first message, clear empty state and re-render
+  if (conv.messages.length === 1){
+    $('#chat-messages').innerHTML = '';
+  }
+  appendMessageEl(userMsg);
+
+  const attachment = state.attachment;
+  const userPrompt = text || '(fichier joint)';
+  promptInput.value = '';
+  autoResize(promptInput);
+  updateCharCount();
+  state.attachment = null;
+  renderAttachmentPreview();
+
+  state.busy = true;
+  sendBtn.disabled = true;
+  $('#chat-subtitle').textContent = '⏳ Génération en cours…';
+
+  try {
+    if (state.orchestrator){
+      await runOrchestrator(userPrompt, attachment, conv);
+    } else {
+      await runDirectChat(userPrompt, attachment, conv);
+    }
+  } catch(err){
+    console.error(err);
+    toast('Erreur : ' + (err.message || err), 'err');
+    // Ajoute un message d'erreur
+    conv.messages.push({
+      id: uid(),
+      role: 'assistant',
+      content: `⚠️ **Erreur réseau** : ${escapeHTML(err.message || String(err))}\n\nRéessaie ou vérifie ta connexion.`,
+      timestamp: Date.now(),
+    });
+    renderChat();
+  } finally {
+    state.busy = false;
+    sendBtn.disabled = false;
+    saveState();
+    updateSubtitle();
+    updateCounters();
+    if (state.view === 'chat') promptInput.focus();
+  }
+}
+
+/* ============================================================
+   BUILD MESSAGES FOR API
+   ============================================================ */
+function buildApiMessages(conv, userPrompt, attachment, systemPromptOverride){
+  const sys = systemPromptOverride || state.settings.systemPrompt;
+  const messages = [];
+
+  if (sys) messages.push({ role: 'system', content: sys });
+
+  // Historique (tous les messages sauf le dernier user qu'on ajoute nous-mêmes)
+  const history = conv.messages.slice(0, -1);
+  for (const m of history){
+    if (m.role === 'user' || m.role === 'assistant'){
+      messages.push({ role: m.role, content: m.content });
+    }
+  }
+
+  // Dernier message utilisateur, avec fichier éventuel
+  let finalContent = userPrompt;
+  if (attachment){
+    finalContent = `Voici un fichier "${attachment.name}" :\n\n\`\`\`${getExtFromName(attachment.name)}\n${attachment.content}\n\`\`\`\n\n${userPrompt}`;
+  }
+  messages.push({ role: 'user', content: finalContent });
+
+  return messages;
+}
+
+function getExtFromName(name){
+  const m = name.match(/\.([^.]+)$/);
+  return m ? m[1].toLowerCase() : 'text';
+}
+
+/* ============================================================
+   STREAM CHAT
+   ============================================================ */
+async function* streamChat(messages, model, opts = {}){
+  const body = {
+    model,
+    messages,
+    stream: true,
+    private: true,
+    referrer: 'nexus-text-ai',
+    temperature: opts.temperature ?? state.settings.temperature,
+    max_tokens: opts.maxTokens ?? state.settings.maxTokens,
+  };
+
   const res = await fetch('https://text.pollinations.ai/openai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, messages, stream: true, private: true, referrer: 'nexus-orchestrator' })
+    body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
+  if (!res.ok){
+    const txt = await res.text().catch(() => '');
+    throw new Error(`HTTP ${res.status}${txt ? ' — ' + txt.slice(0, 120) : ''}`);
+  }
+  if (!res.body) throw new Error('Stream indisponible');
+
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = '';
+
   while (true){
     const { done, value } = await reader.read();
     if (done) break;
     buf += dec.decode(value, { stream: true });
     const lines = buf.split('\n');
     buf = lines.pop();
+
     for (const line of lines){
       const t = line.trim();
       if (!t.startsWith('data:')) continue;
@@ -893,410 +1285,235 @@ async function* streamChat(messages, model){
   }
 }
 
-async function askText(messages, model){
-  // Essaie d'abord le streaming puis fallback
+async function askText(messages, model, opts = {}){
+  // Essaie le streaming en premier
   try {
     let full = '';
-    for await (const chunk of streamChat(messages, model)) full += chunk;
+    for await (const chunk of streamChat(messages, model, opts)) full += chunk;
     if (full.trim()) return full;
   } catch(e){
     console.warn('Streaming échoué, fallback simple', e);
   }
+  // Fallback GET
   const last = [...messages].reverse().find(m => m.role === 'user');
-  const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(last?.content || '')}?model=${model}`);
-  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const url = `https://text.pollinations.ai/${encodeURIComponent(last?.content || '')}?model=${model}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.text();
 }
 
 /* ============================================================
-   ORCHESTRATEUR — PLANIFICATEUR
+   RUN — DIRECT CHAT
    ============================================================ */
-const PLANNER_PROMPT = `Tu es un PLANIFICATEUR d'IA. Analyse la demande de l'utilisateur et produis un plan JSON pour la satisfaire.
+async function runDirectChat(userPrompt, attachment, conv){
+  const box = $('#chat-messages');
+  const msgId = uid();
 
-Types de tâches disponibles :
-- "text"  : réponse textuelle, explication, analyse, rédaction (modèles: openai, openai-fast, openai-large, mistral, llama, phi, gemini, deepseek)
-- "code"  : génération de code, debug, explication technique (modèles: qwen-coder, deepseek, openai-large)
-- "image" : génération d'une image (modèles: flux, turbo, kontext, flux-realism, flux-anime, flux-3d)
-- "video" : génération d'une courte vidéo (modèles: turbo, flux)
+  const wrap = document.createElement('div');
+  wrap.className = 'msg flex justify-start animate-fade-in';
+  wrap.dataset.msgId = msgId;
+  wrap.innerHTML = `
+    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 leading-relaxed w-full min-w-0">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Assistant</span>
+      </div>
+      <div class="content msg-md streaming"><div class="flex gap-1.5 py-1"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+    </div>`;
+  box.appendChild(wrap);
+  box.scrollTop = box.scrollHeight;
+
+  const contentEl = wrap.querySelector('.content');
+  const model = state.settings.textModel;
+  const apiMessages = buildApiMessages(conv, userPrompt, attachment);
+
+  let full = '';
+  let first = true;
+  let lastRender = 0;
+  let renderScheduled = false;
+
+  const scheduleRender = () => {
+    if (renderScheduled) return;
+    renderScheduled = true;
+    const now = Date.now();
+    const delay = Math.max(0, 60 - (now - lastRender));
+    setTimeout(() => {
+      renderScheduled = false;
+      lastRender = Date.now();
+      contentEl.innerHTML = renderMarkdown(full) + '<span class="cursor-blink"></span>';
+      const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+      if (nearBottom) box.scrollTop = box.scrollHeight;
+    }, delay);
+  };
+
+  try {
+    for await (const chunk of streamChat(apiMessages, model)){
+      if (first){ contentEl.innerHTML = ''; first = false; }
+      full += chunk;
+      scheduleRender();
+    }
+  } catch(err){
+    console.warn('Streaming échoué, fallback', err);
+    try {
+      full = await askText(apiMessages, model);
+    } catch(err2){
+      throw new Error('Impossible de contacter l\'IA. ' + (err2.message || err2));
+    }
+  }
+
+  if (!full.trim()) full = '*(réponse vide)*';
+
+  // Final render
+  contentEl.classList.remove('streaming');
+  contentEl.innerHTML = renderMarkdown(full);
+  enhanceCodeBlocks(contentEl);
+  wrap.classList.remove('msg');
+
+  // Save
+  const assistantMsg = {
+    id: msgId,
+    role: 'assistant',
+    content: full,
+    model,
+    timestamp: Date.now(),
+  };
+  conv.messages.push(assistantMsg);
+  conv.updatedAt = Date.now();
+
+  // Add actions
+  wrap.classList.add('msg');
+  attachAssistantActions(wrap, assistantMsg);
+
+  const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 200;
+  if (nearBottom) box.scrollTop = box.scrollHeight;
+}
+
+/* ============================================================
+   ORCHESTRATOR — PLANIFICATEUR
+   ============================================================ */
+const PLANNER_PROMPT = `Tu es un PLANIFICATEUR d'IA textuelle. Analyse la demande de l'utilisateur et produis un plan JSON.
+
+Types de tâches :
+- "text"      : réponse textuelle, explication, analyse
+- "code"      : génération de code, script, algorithme, debug
+- "reason"    : raisonnement complexe, calcul, logique, mathématiques
+- "write"     : rédaction créative (essai, poème, histoire, article)
+- "translate" : traduction
+- "summarize" : résumé, synthèse
 
 Règles :
-1. Maximum {{MAX}} sous-tâches.
-2. Utilise "image" UNIQUEMENT si l'utilisateur demande explicitement une image, un visuel, un logo, un dessin, une illustration ou une photo.
-3. Utilise "video" UNIQUEMENT si l'utilisateur demande explicitement une vidéo, une animation ou un clip.
-4. Utilise "code" si la demande porte sur du code, un script, un algorithme ou de la programmation.
-5. Sinon, une seule tâche "text".
-6. Pour les prompts d'image, écris un prompt VISUEL détaillé et autonome en anglais ou français, SANS référence à l'utilisateur.
-7. "synthesis": true si plusieurs tâches → un modèle combinera les résultats. Sinon false.
+1. Maximum {{MAX}} tâches.
+2. Si la demande est simple et directe → UNE SEULE tâche.
+3. Si elle nécessite plusieurs angles (comparer, expliquer ET coder, traduire ET réécrire...) → plusieurs tâches.
+4. Choisis le modèle adapté :
+   - code → "qwen-coder" ou "deepseek"
+   - reason → "deepseek-r1" ou "phi" ou "openai-large"
+   - write → "openai" ou "mistral"
+   - translate → "openai" ou "gemini"
+   - text général → "openai" ou "gemini"
+5. "synthesis": true uniquement si plusieurs tâches (un modèle combinera les résultats).
 
 Réponds UNIQUEMENT avec un objet JSON valide, sans texte avant ni après :
 {
-  "reasoning": "explication courte",
+  "reasoning": "courte explication",
   "tasks": [
-    {"type": "text", "model": "openai", "prompt": "..."},
-    {"type": "image", "model": "flux", "prompt": "...", "width": 1024, "height": 1024},
-    {"type": "video", "model": "turbo", "prompt": "...", "frames": 8, "duration": 3},
-    {"type": "code", "model": "qwen-coder", "prompt": "..."}
+    {"type": "text", "model": "openai", "prompt": "..."}
   ],
-  "synthesis": true
+  "synthesis": false
 }`;
+
+function extractJSON(text){
+  let t = String(text).trim();
+  t = t.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+  const start = t.indexOf('{');
+  const end = t.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('Pas de JSON trouvé');
+  return JSON.parse(t.slice(start, end + 1));
+}
 
 async function planTasks(userPrompt){
   const prompt = PLANNER_PROMPT.replace('{{MAX}}', state.settings.maxTasks);
   const messages = [
     { role: 'system', content: prompt },
-    { role: 'user', content: userPrompt }
+    { role: 'user', content: userPrompt },
   ];
-  const raw = await askText(messages, state.settings.orchModel);
-  console.log('[Planner raw]', raw);
+  const raw = await askText(messages, state.settings.orchModel, { temperature: 0.3, maxTokens: 1024 });
+  console.log('[Planner]', raw);
   const plan = extractJSON(raw);
   if (!plan.tasks || !Array.isArray(plan.tasks)) throw new Error('Plan invalide');
-  // Limite
   plan.tasks = plan.tasks.slice(0, state.settings.maxTasks);
-  // Validation basique
   plan.tasks.forEach(t => {
     if (!t.type) t.type = 'text';
-    if (!t.model){
-      if (t.type === 'image') t.model = state.settings.imageModel;
-      else if (t.type === 'video') t.model = 'turbo';
-      else if (t.type === 'code') t.model = 'qwen-coder';
+    if (!t.model || !TEXT_MODELS.find(m => m.id === t.model)){
+      if (t.type === 'code') t.model = 'qwen-coder';
+      else if (t.type === 'reason') t.model = 'deepseek-r1';
       else t.model = state.settings.textModel;
     }
+    if (!t.prompt) t.prompt = userPrompt;
   });
   return plan;
 }
 
 /* ============================================================
-   ORCHESTRATEUR — EXÉCUTION
+   ORCHESTRATOR — EXÉCUTION
    ============================================================ */
-async function executeTask(task, onUpdate){
-  onUpdate?.('running');
+async function executeTask(task, onStatus){
+  onStatus?.('running');
   try {
-    if (task.type === 'text' || task.type === 'code'){
-      const model = task.model || (task.type === 'code' ? 'qwen-coder' : state.settings.textModel);
-      const text = await askText([
-        { role: 'system', content: state.settings.systemPrompt },
-        { role: 'user', content: task.prompt }
-      ], model);
-      onUpdate?.('done');
-      return { type:'text', model, content:text, prompt:task.prompt };
-    }
-    if (task.type === 'image'){
-      const w = task.width || 1024;
-      const h = task.height || 1024;
-      const model = task.model || state.settings.imageModel;
-      const url = buildImageURL(task.prompt, { width:w, height:h, model });
-      const blob = await fetchImageBlobWithRetry(url);
-      const objUrl = blobToObjectURL(blob);
-      onUpdate?.('done');
-      return { type:'image', model, url:objUrl, prompt:task.prompt, w, h };
-    }
-    if (task.type === 'video'){
-      const model = task.model || 'turbo';
-      const nFrames = Math.min(Math.max(task.frames || 8, 4), 14);
-      const duration = Math.min(Math.max(task.duration || 3, 2), 6);
-      const w = 768, h = 768;
-      // Génère les images
-      const baseSeed = Math.floor(Math.random() * 100000);
-      const blobs = [];
-      for (let i = 0; i < nFrames; i++){
-        const url = buildImageURL(task.prompt, { width:w, height:h, seed: baseSeed + i * 137, model });
-        const blob = await fetchImageBlobWithRetry(url, 1);
-        blobs.push(blob);
-      }
-      // Encode
-      const webmUrl = await encodeVideoFromBlobs(blobs, w, h, duration);
-      onUpdate?.('done');
-      return { type:'video', model, url:webmUrl, prompt:task.prompt, duration };
-    }
-    throw new Error('Type inconnu: ' + task.type);
+    const sys = state.settings.systemPrompt;
+    const messages = [
+      { role: 'system', content: sys },
+      { role: 'user', content: task.prompt },
+    ];
+    const text = await askText(messages, task.model, { temperature: state.settings.temperature });
+    onStatus?.('done');
+    return { type:task.type, model:task.model, content:text, prompt:task.prompt };
   } catch(e){
-    onUpdate?.('error', e.message);
-    return { type:'error', error: e.message, prompt: task.prompt, taskType: task.type };
+    onStatus?.('error', e.message);
+    return { type:'error', error:e.message, prompt:task.prompt, taskType:task.type };
   }
-}
-
-async function encodeVideoFromBlobs(blobs, w, h, duration){
-  // Charge toutes les images
-  const images = await Promise.all(blobs.map(b => new Promise((res, rej) => {
-    const im = new Image();
-    im.onload = () => res(im);
-    im.onerror = rej;
-    im.src = blobToObjectURL(b);
-  })));
-
-  const canvas = document.createElement('canvas');
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext('2d');
-
-  const fps = 25;
-  const totalFrames = Math.max(duration * fps, images.length * 4);
-  const perImage = totalFrames / images.length;
-
-  const stream = canvas.captureStream(fps);
-  let mime = 'video/webm;codecs=vp9';
-  if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp8';
-  if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
-
-  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
-  const chunks = [];
-  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-  const stopped = new Promise(r => rec.onstop = r);
-
-  rec.start(100);
-
-  for (let f = 0; f < totalFrames; f++){
-    const t = f / perImage;
-    const idx = Math.min(Math.floor(t), images.length - 1);
-    const nxt = Math.min(idx + 1, images.length - 1);
-    const alpha = Math.min(t - idx, 1);
-    const zoom = 1 + 0.04 * (f / totalFrames);
-
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, w, h);
-
-    const draw = (img, a, z) => {
-      ctx.globalAlpha = a;
-      const ir = img.width / img.height;
-      const cr = w / h;
-      let dw, dh;
-      if (ir > cr){ dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
-      dw *= z; dh *= z;
-      ctx.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh);
-    };
-    draw(images[idx], 1, zoom);
-    if (alpha > 0 && nxt !== idx) draw(images[nxt], alpha, zoom);
-
-    await new Promise(r => setTimeout(r, 1000 / fps));
-  }
-
-  rec.stop();
-  await stopped;
-  const blob = new Blob(chunks, { type:'video/webm' });
-  return blobToObjectURL(blob);
 }
 
 /* ============================================================
-   ORCHESTRATEUR — SYNTHÈSE
+   ORCHESTRATOR — SYNTHÈSE
    ============================================================ */
 async function synthesize(userPrompt, results){
   const context = results.map((r, i) => {
-    if (r.type === 'text') return `### Tâche ${i+1} (texte, ${r.model})\n${r.content}`;
-    if (r.type === 'code') return `### Tâche ${i+1} (code, ${r.model})\n\`\`\`\n${r.content}\n\`\`\``;
-    if (r.type === 'image') return `### Tâche ${i+1} (image, ${r.model})\nUne image a été générée avec le prompt : "${r.prompt}". Décris-la brièvement dans ta réponse.`;
-    if (r.type === 'video') return `### Tâche ${i+1} (vidéo, ${r.model})\nUne vidéo a été générée avec le prompt : "${r.prompt}". Mentionne-la.`;
     if (r.type === 'error') return `### Tâche ${i+1} (${r.taskType}) — ÉCHEC : ${r.error}`;
-    return '';
+    return `### Tâche ${i+1} (${r.type}, modèle ${r.model})\n${r.content}`;
   }).join('\n\n');
 
-  const sysPrompt = `Tu es un assistant qui combine les résultats de plusieurs sous-tâches IA en UNE réponse finale unifiée, claire et naturelle pour l'utilisateur. Ne mentionne pas "tâche 1", "tâche 2" : intègre tout naturellement. Si une image ou une vidéo a été générée, dis-le simplement sans décrire les détails techniques. Réponds dans la langue de la question initiale. Utilise du markdown.`;
+  const sysPrompt = `Tu es un assistant qui combine plusieurs résultats de sous-tâches IA en UNE réponse finale unifiée, claire, bien structurée et naturelle pour l'utilisateur.
+
+Règles :
+- Ne dis PAS "tâche 1", "tâche 2". Intègre tout naturellement.
+- Si plusieurs tâches portent sur le même sujet, fusionne-les.
+- Si une tâche a produit du code, garde-le dans un bloc de code complet et propre.
+- Commence par une phrase de synthèse, puis structure le reste.
+- Réponds dans la langue de la question initiale.
+- Utilise du markdown (titres, listes, blocs de code).`;
 
   const userContent = `Question initiale : "${userPrompt}"\n\nRésultats des sous-tâches :\n\n${context}\n\nProduis maintenant la réponse finale unifiée.`;
 
   const final = await askText([
     { role: 'system', content: sysPrompt },
-    { role: 'user', content: userContent }
+    { role: 'user', content: userContent },
   ], state.settings.synthModel);
 
   return final;
 }
 
 /* ============================================================
-   CHAT — ENVOI
+   ORCHESTRATOR — PIPELINE COMPLET
    ============================================================ */
-const promptInput = $('#user-input');
-const sendBtn = $('#send-btn');
-
-function autoResize(el){
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
-}
-promptInput.addEventListener('input', () => autoResize(promptInput));
-promptInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
-});
-
-$('#new-chat-btn').addEventListener('click', newConversation);
-$('#history-btn').addEventListener('click', openHistory);
-
-/* Orchestrator toggle */
-$('#orch-toggle').addEventListener('click', () => {
-  state.orchestrator = !state.orchestrator;
-  $('#orch-toggle').classList.toggle('on', state.orchestrator);
-  $('#chat-model').disabled = state.orchestrator;
-  saveState();
-  toast(state.orchestrator ? '🧠 Mode orchestrateur activé' : '💬 Mode chat direct', 'ok');
-});
-
-/* Attachment */
-$('#attach-btn').addEventListener('click', () => $('#file-input').click());
-$('#file-input').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (file.size > 4 * 1024 * 1024){ toast('Image trop lourde (max 4 Mo)', 'err'); return; }
-  const reader = new FileReader();
-  reader.onload = ev => {
-    state.attachment = { dataUrl: ev.target.result, name: file.name };
-    renderAttachmentPreview();
-  };
-  reader.readAsDataURL(file);
-  e.target.value = '';
-});
-
-function renderAttachmentPreview(){
-  const box = $('#attachment-preview');
-  if (!state.attachment){ box.classList.add('hidden'); box.innerHTML = ''; return; }
-  box.classList.remove('hidden');
-  box.innerHTML = `
-    <div class="flex items-center gap-3 bg-slate-900/70 border border-slate-800 rounded-xl p-2 max-w-fit">
-      <img src="${state.attachment.dataUrl}" class="w-12 h-12 rounded-lg object-cover border border-slate-700" />
-      <span class="text-xs text-slate-400 max-w-[180px] truncate">${escapeHTML(state.attachment.name)}</span>
-      <button id="remove-attachment" class="text-slate-500 hover:text-rose-400 px-2 text-lg leading-none">×</button>
-    </div>`;
-  $('#remove-attachment').addEventListener('click', () => {
-    state.attachment = null;
-    renderAttachmentPreview();
-  });
-}
-
-/* Bulle d'exécution live */
-function createOrchestratorBubble(plan){
-  const box = $('#chat-messages');
-  const wrap = document.createElement('div');
-  wrap.className = 'flex justify-start animate-fade-in';
-
-  const icons = { text:'💬', image:'🎨', video:'🎬', code:'💻' };
-
-  const stepsHtml = plan.tasks.map((t, i) => `
-    <div class="pipeline-step" data-step="${i}">
-      <span>${icons[t.type] || '•'}</span>
-      <span class="font-semibold">${t.type}</span>
-      <span class="text-slate-500 truncate flex-1 min-w-0">${escapeHTML((t.prompt||'').slice(0,50))}${(t.prompt||'').length>50?'…':''}</span>
-      <span class="step-status text-[10px]">⏳</span>
-    </div>`).join('');
-
-  wrap.innerHTML = `
-    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed w-full min-w-0">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Orchestrateur en action</span>
-      </div>
-      <details open class="mb-3">
-        <summary class="text-[10px] font-bold text-slate-400 uppercase tracking-wider cursor-pointer select-none mb-2">
-          🧠 Plan · ${plan.tasks.length} tâche(s)
-        </summary>
-        <div class="space-y-1.5">${stepsHtml}</div>
-      </details>
-      <div class="content text-slate-300"></div>
-    </div>`;
-  box.appendChild(wrap);
-  box.scrollTop = box.scrollHeight;
-  return wrap;
-}
-
-function updateStepStatus(wrap, index, status){
-  const step = wrap.querySelector(`.pipeline-step[data-step="${index}"]`);
-  if (!step) return;
-  const s = step.querySelector('.step-status');
-  step.classList.remove('active', 'done', 'error');
-  if (status === 'running'){ step.classList.add('active'); s.textContent = '⚙️'; }
-  else if (status === 'done'){ step.classList.add('done'); s.textContent = '✅'; }
-  else if (status === 'error'){ step.classList.add('error'); s.textContent = '⚠️'; }
-}
-
-async function sendMessage(){
-  const text = promptInput.value.trim();
-  if ((!text && !state.attachment) || state.busy) return;
-
-  if (!getCurrent()) newConversation();
-  const conv = getCurrent();
-
-  const userMsg = {
-    role: 'user',
-    content: text || '(image jointe)',
-    image: state.attachment?.dataUrl || null
-  };
-  conv.messages.push(userMsg);
-  if (conv.title === 'Nouvelle conversation'){
-    conv.title = (text || 'Image').slice(0, 50) + ((text || '').length > 50 ? '…' : '');
-  }
-
-  appendMessageEl(userMsg);
-  const userPrompt = text;
-  promptInput.value = '';
-  autoResize(promptInput);
-  state.attachment = null;
-  renderAttachmentPreview();
-
-  state.busy = true;
-  sendBtn.disabled = true;
-
-  try {
-    if (state.orchestrator){
-      await runOrchestrator(userPrompt, conv);
-    } else {
-      await runDirectChat(userPrompt, conv);
-    }
-  } catch(err){
-    console.error(err);
-    toast('Erreur : ' + (err.message || err), 'err');
-  } finally {
-    state.busy = false;
-    sendBtn.disabled = false;
-    saveState();
-    promptInput.focus();
-  }
-}
-
-/* --- Mode chat direct --- */
-async function runDirectChat(userPrompt, conv){
-  const box = $('#chat-messages');
-  const wrap = document.createElement('div');
-  wrap.className = 'flex justify-start animate-fade-in';
-  wrap.innerHTML = `
-    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed w-full min-w-0">
-      <span class="block text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Assistant</span>
-      <div class="content msg-md"><div class="flex gap-1.5 py-1"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
-    </div>`;
-  box.appendChild(wrap);
-  box.scrollTop = box.scrollHeight;
-
-  const contentEl = wrap.querySelector('.content');
-  const model = $('#chat-model').value;
-  const sys = state.settings.systemPrompt;
-
-  const apiMessages = [
-    ...(sys ? [{ role:'system', content:sys }] : []),
-    ...conv.messages.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role:m.role, content:m.content }))
-  ];
-
-  let full = '';
-  let first = true;
-  try {
-    for await (const chunk of streamChat(apiMessages, model)){
-      if (first){ contentEl.innerHTML = ''; first = false; }
-      full += chunk;
-      contentEl.innerHTML = renderMarkdown(full) + '<span class="cursor-blink"></span>';
-      box.scrollTop = box.scrollHeight;
-    }
-  } catch(e){
-    full = await askText(apiMessages, model);
-  }
-  if (!full) full = '*(réponse vide)*';
-  contentEl.innerHTML = renderMarkdown(full);
-
-  conv.messages.push({ role:'assistant', content:full });
-}
-
-/* --- Mode orchestrateur --- */
-async function runOrchestrator(userPrompt, conv){
+async function runOrchestrator(userPrompt, attachment, conv){
   const box = $('#chat-messages');
 
-  // Étape 1 : planification
+  // 1. Bubble de planification
   const planBubble = document.createElement('div');
   planBubble.className = 'flex justify-start animate-fade-in';
   planBubble.innerHTML = `
-    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm w-full">
-      <div class="flex items-center gap-2">
+    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl w-full">
+      <div class="flex items-center gap-3">
         <div class="w-4 h-4 rounded-full border-2 border-slate-700 border-t-cyan-500 spin"></div>
         <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Analyse de la demande…</span>
       </div>
@@ -1312,523 +1529,539 @@ async function runOrchestrator(userPrompt, conv){
     planBubble.remove();
     console.warn('Planification échouée, fallback direct', e);
     toast('Planificateur indisponible → chat direct', 'warn');
-    return runDirectChat(userPrompt, conv);
+    return runDirectChat(userPrompt, attachment, conv);
   }
 
-  // Étape 2 : affichage du plan
-  const ui = createOrchestratorBubble(plan);
+  // 2. Affiche le plan et démarre l'exécution
+  const msgId = uid();
+  const ui = createOrchestratorBubble(plan, msgId);
   const contentEl = ui.querySelector('.content');
-  contentEl.innerHTML = `<span class="text-slate-400 text-xs">Exécution de ${plan.tasks.length} tâche(s) en parallèle…</span>`;
+  contentEl.innerHTML = `<span class="text-slate-400 text-xs flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-slate-700 border-t-cyan-500 spin inline-block"></span>Exécution de ${plan.tasks.length} tâche(s) en parallèle…</span>`;
 
-  // Étape 3 : exécution parallèle
+  // 3. Exécution parallèle
   const results = await Promise.all(plan.tasks.map((task, i) =>
-    executeTask(task, (status, err) => {
-      updateStepStatus(ui, i, status);
-    })
+    executeTask(task, (status, err) => updateStepStatus(ui, i, status, err))
   ));
 
-  // Étape 4 : synthèse
+  // 4. Synthèse
   let finalText;
-  if (results.length === 1 && results[0].type === 'text'){
+  if (results.length === 1 && results[0].type !== 'error'){
     finalText = results[0].content;
-  } else if (plan.synthesis !== false && results.filter(r => r.type === 'text' || r.type === 'code').length > 1){
+  } else if (plan.synthesis !== false && results.filter(r => r.type !== 'error').length > 1){
     contentEl.innerHTML = `<span class="text-slate-400 text-xs flex items-center gap-2"><span class="w-3 h-3 rounded-full border-2 border-slate-700 border-t-cyan-500 spin inline-block"></span>Synthèse finale…</span>`;
     try {
       finalText = await synthesize(userPrompt, results);
     } catch(e){
       console.warn('Synthèse échouée', e);
-      finalText = results.filter(r => r.content).map(r => r.content).join('\n\n---\n\n') || 'Résultats générés.';
+      finalText = results
+        .filter(r => r.type !== 'error')
+        .map(r => r.content)
+        .join('\n\n---\n\n') || 'Résultats générés.';
     }
   } else {
-    const parts = results.filter(r => r.type === 'text' || r.type === 'code').map(r => r.content);
-    finalText = parts.length ? parts.join('\n\n') : '✨ Génération terminée.';
-    if (!parts.length){
-      const artifacts = results.filter(r => r.type === 'image' || r.type === 'video').length;
-      finalText = artifacts ? `✨ ${artifacts} média(s) généré(s) ci-dessous.` : '✨ Terminé.';
-    }
+    finalText = results
+      .filter(r => r.type !== 'error')
+      .map(r => r.content)
+      .join('\n\n---\n\n') || '✨ Terminé.';
   }
 
-  // Étape 5 : remplacement du contenu
-  const artifacts = results.filter(r => r.type === 'image' || r.type === 'video').map(r => ({
-    type: r.type, model: r.model, url: r.url
-  }));
-
+  // 5. Erreurs éventuelles
   const errors = results.filter(r => r.type === 'error');
   if (errors.length){
     finalText += `\n\n> ⚠️ ${errors.length} tâche(s) ont échoué : ${errors.map(e => e.taskType).join(', ')}.`;
   }
 
+  contentEl.classList.remove('streaming');
   contentEl.innerHTML = renderMarkdown(finalText);
+  enhanceCodeBlocks(contentEl);
+  ui.classList.remove('msg');
+  ui.classList.add('msg');
 
-  // Injecter les médias
-  if (artifacts.length){
-    const art = document.createElement('div');
-    art.className = 'mt-4 space-y-3';
-    artifacts.forEach(a => {
-      const div = document.createElement('div');
-      div.className = 'rounded-xl border border-slate-800 bg-slate-950/60 p-2';
-      if (a.type === 'image'){
-        div.innerHTML = `
-          <div class="flex items-center justify-between mb-1.5 px-1">
-            <span class="badge badge-pink">🎨 Image · ${a.model}</span>
-            <button class="dl text-[11px] text-slate-400 hover:text-cyan-400">⬇️ Télécharger</button>
-          </div>
-          <img src="${a.url}" class="w-full rounded-lg cursor-zoom-in" />`;
-        div.querySelector('img').addEventListener('click', () => {
-          $('#lightbox-img').src = a.url;
-          $('#lightbox').classList.add('show');
-        });
-        div.querySelector('.dl').addEventListener('click', () => {
-          const l = document.createElement('a');
-          l.href = a.url; l.download = 'nexus-img-' + Date.now() + '.jpg'; l.click();
-        });
-      } else {
-        div.innerHTML = `
-          <div class="flex items-center justify-between mb-1.5 px-1">
-            <span class="badge badge-violet">🎬 Vidéo · ${a.model}</span>
-            <button class="dl text-[11px] text-slate-400 hover:text-cyan-400">⬇️ Télécharger</button>
-          </div>
-          <video src="${a.url}" controls autoplay loop class="w-full rounded-lg"></video>`;
-        div.querySelector('.dl').addEventListener('click', () => {
-          const l = document.createElement('a');
-          l.href = a.url; l.download = 'nexus-video-' + Date.now() + '.webm'; l.click();
-        });
-      }
-      art.appendChild(div);
-    });
-    ui.querySelector('.glass').appendChild(art);
-  }
-
-  // Sauvegarde dans la conversation
-  conv.messages.push({
+  // Save
+  const assistantMsg = {
+    id: msgId,
     role: 'assistant',
     content: finalText,
+    model: `orchestrator (${plan.tasks.length})`,
     plan: plan.tasks.map(t => ({ type:t.type, model:t.model, prompt:t.prompt })),
-    artifacts
-  });
+    timestamp: Date.now(),
+  };
+  conv.messages.push(assistantMsg);
+  conv.updatedAt = Date.now();
+
+  attachAssistantActions(ui, assistantMsg);
+
+  const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 250;
+  if (nearBottom) box.scrollTop = box.scrollHeight;
 
   toast('✅ Réponse orchestrée', 'ok');
 }
 
-/* ============================================================
-   IMAGE — MANUEL
-   ============================================================ */
-function fillImageSelects(){
-  ['#img-model', '#vid-model', '#set-image-model'].forEach(sel => {
-    const el = $(sel);
-    if (!el) return;
-    el.innerHTML = '';
-    IMAGE_MODELS.forEach(m => {
-      const o = document.createElement('option');
-      o.value = m.id; o.textContent = m.name;
-      el.appendChild(o);
-    });
-  });
-  $('#img-model').value = state.settings.imageModel;
-  $('#vid-model').value = 'turbo';
-  $('#set-image-model').value = state.settings.imageModel;
+function createOrchestratorBubble(plan, msgId){
+  const box = $('#chat-messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg flex justify-start animate-fade-in';
+  wrap.dataset.msgId = msgId;
+
+  const icons = { text:'💬', code:'💻', reason:'🧠', write:'✍️', translate:'🌍', summarize:'📋' };
+
+  const stepsHtml = plan.tasks.map((t, i) => `
+    <div class="pipeline-step" data-step="${i}">
+      <span>${icons[t.type] || '•'}</span>
+      <span class="font-semibold">${escapeHTML(t.type)}</span>
+      <span class="text-slate-500 truncate flex-1 min-w-0 text-[11px]">${escapeHTML((t.prompt||'').slice(0,55))}${(t.prompt||'').length>55?'…':''}</span>
+      <span class="step-status text-[10px]">⏳</span>
+    </div>`).join('');
+
+  wrap.innerHTML = `
+    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 leading-relaxed w-full min-w-0">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Orchestrateur en action</span>
+      </div>
+      <details open class="mb-3 group">
+        <summary class="text-[10px] font-bold text-slate-400 uppercase tracking-wider cursor-pointer select-none mb-2 hover:text-slate-300">
+          🧠 Plan · ${plan.tasks.length} tâche(s)
+        </summary>
+        <div class="space-y-1.5">${stepsHtml}</div>
+      </details>
+      <div class="content msg-md streaming"></div>
+      <div class="msg-actions mt-3"></div>
+    </div>`;
+
+  box.appendChild(wrap);
+  box.scrollTop = box.scrollHeight;
+  return wrap;
 }
 
-$$('#ratio-chips .chip').forEach(c => c.addEventListener('click', () => {
-  $$('#ratio-chips .chip').forEach(x => x.classList.remove('active'));
-  c.classList.add('active');
-  $('#img-w').value = c.dataset.w;
-  $('#img-h').value = c.dataset.h;
-}));
+function updateStepStatus(wrap, index, status, err){
+  const step = wrap.querySelector(`.pipeline-step[data-step="${index}"]`);
+  if (!step) return;
+  const s = step.querySelector('.step-status');
+  step.classList.remove('active', 'done', 'error');
+  if (status === 'running'){ step.classList.add('active'); s.textContent = '⚙️'; }
+  else if (status === 'done'){ step.classList.add('done'); s.textContent = '✅'; }
+  else if (status === 'error'){ step.classList.add('error'); s.textContent = '⚠️'; if (err) step.title = err; }
+}
 
-$$('#style-chips .chip').forEach(c => c.addEventListener('click', () => {
-  $$('#style-chips .chip').forEach(x => x.classList.remove('active'));
-  c.classList.add('active');
-  state.imgStyle = c.dataset.style || '';
-}));
+/* ============================================================
+   REGENERATE / CONTINUE / EDIT
+   ============================================================ */
+async function regenerateFromMessage(assistantMsgId){
+  const conv = getCurrent();
+  if (!conv || state.busy) return;
+  const idx = conv.messages.findIndex(m => m.id === assistantMsgId);
+  if (idx === -1) return;
 
-$('#img-generate').addEventListener('click', generateImage);
+  // Retire le message assistant
+  conv.messages.splice(idx, 1);
+  // Récupère le user précédent
+  let userIdx = idx - 1;
+  while (userIdx >= 0 && conv.messages[userIdx].role !== 'user') userIdx--;
+  if (userIdx < 0) return;
 
-async function generateImage(){
-  const raw = $('#img-prompt').value.trim();
-  if (!raw){ toast('Décris ton image !', 'err'); return; }
+  const userMsg = conv.messages[userIdx];
+  // Retire ce user et tout ce qui suit
+  conv.messages.splice(userIdx);
+  saveState();
+  renderChat();
 
-  const prompt = raw + state.imgStyle;
-  const w = +$('#img-w').value;
-  const h = +$('#img-h').value;
-  const seedVal = $('#img-seed').value.trim();
-  const model = $('#img-model').value;
+  // Renvoie
+  promptInput.value = userMsg.content;
+  state.attachment = null;
+  if (userMsg.attachments?.length){
+    state.attachment = userMsg.attachments[0];
+    renderAttachmentPreview();
+  }
+  await sendMessage();
+}
 
-  const stage = $('#img-stage');
-  const btn = $('#img-generate');
-  btn.disabled = true;
-  $('#img-download').disabled = true;
+async function continueGeneration(assistantMsgId){
+  const conv = getCurrent();
+  if (!conv || state.busy) return;
+  const idx = conv.messages.findIndex(m => m.id === assistantMsgId);
+  if (idx === -1) return;
 
-  stage.innerHTML = `
-    <div class="text-center">
-      <div class="w-11 h-11 rounded-full border-[3px] border-slate-700 border-t-cyan-500 spin mx-auto mb-3"></div>
-      <div class="text-slate-400 text-sm">Génération en cours…</div>
-    </div>
-    <div class="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all" id="img-progress" style="width:0%"></div>`;
-
-  let pct = 0;
-  const bar = $('#img-progress');
-  const timer = setInterval(() => {
-    pct = Math.min(pct + Math.random() * 8, 90);
-    if (bar) bar.style.width = pct + '%';
-  }, 300);
+  state.busy = true;
+  sendBtn.disabled = true;
+  $('#chat-subtitle').textContent = '⏩ Continuation…';
 
   try {
-    const url = buildImageURL(prompt, {
-      width: w, height: h, model,
-      seed: seedVal ? +seedVal : undefined
+    const apiMessages = [];
+    if (state.settings.systemPrompt) apiMessages.push({ role:'system', content: state.settings.systemPrompt });
+    conv.messages.slice(0, idx + 1).forEach(m => {
+      if (m.role === 'user' || m.role === 'assistant') apiMessages.push({ role: m.role, content: m.content });
     });
-    const blob = await fetchImageBlobWithRetry(url);
-    const objUrl = blobToObjectURL(blob);
-    clearInterval(timer);
+    apiMessages.push({ role: 'user', content: "Continue ta réponse exactement là où tu t'es arrêté, sans répéter ce qui précède." });
 
-    stage.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = objUrl;
-    img.className = 'max-w-full rounded-xl shadow-2xl cursor-zoom-in';
-    img.style.maxHeight = '60vh';
-    img.addEventListener('click', () => {
-      $('#lightbox-img').src = objUrl;
-      $('#lightbox').classList.add('show');
-    });
-    stage.appendChild(img);
+    const continuation = await askText(apiMessages, state.settings.textModel);
 
-    state.lastImage = { url: objUrl, prompt, w, h, model };
-    $('#img-download').disabled = false;
-
-    $('#img-gallery-wrap').classList.remove('hidden');
-    const g = document.createElement('img');
-    g.src = objUrl;
-    g.title = prompt;
-    g.className = 'w-full aspect-square object-cover rounded-lg border border-slate-800 cursor-pointer hover:scale-105 hover:border-cyan-500/50 transition';
-    g.addEventListener('click', () => {
-      stage.innerHTML = '';
-      const big = document.createElement('img');
-      big.src = objUrl;
-      big.className = 'max-w-full rounded-xl shadow-2xl';
-      big.style.maxHeight = '60vh';
-      stage.appendChild(big);
-    });
-    $('#img-gallery').prepend(g);
-
-    toast('Image générée ✨', 'ok');
-  } catch(err){
-    clearInterval(timer);
-    stage.innerHTML = `<div class="text-center text-rose-400 text-sm p-6">
-      ⚠️ ${escapeHTML(err.message)}<br>
-      <span class="text-xs text-slate-500 mt-2 block">Essaie avec un autre modèle (Turbo est le plus fiable).</span>
-    </div>`;
-    toast('Erreur de génération', 'err');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-$('#img-download').addEventListener('click', () => {
-  if (!state.lastImage) return;
-  const a = document.createElement('a');
-  a.href = state.lastImage.url;
-  a.download = 'nexus-' + Date.now() + '.jpg';
-  a.click();
-  toast('Téléchargement lancé', 'ok');
-});
-
-/* ============================================================
-   VIDÉO — MANUEL
-   ============================================================ */
-$$('#motion-chips .chip').forEach(c => c.addEventListener('click', () => {
-  $$('#motion-chips .chip').forEach(x => x.classList.remove('active'));
-  c.classList.add('active');
-  state.motion = +c.dataset.motion;
-}));
-
-$('#vid-generate').addEventListener('click', generateVideo);
-
-async function generateVideo(){
-  const prompt = $('#vid-prompt').value.trim();
-  if (!prompt){ toast('Décris ta vidéo !', 'err'); return; }
-
-  const nFrames = +$('#vid-frames').value;
-  const duration = +$('#vid-duration').value;
-  const w = +$('#vid-w').value;
-  const h = +$('#vid-h').value;
-  const model = $('#vid-model').value;
-
-  const stage = $('#vid-stage');
-  const btn = $('#vid-generate');
-  btn.disabled = true;
-  $('#vid-download').disabled = true;
-
-  stage.innerHTML = `
-    <div class="text-center">
-      <div class="w-11 h-11 rounded-full border-[3px] border-slate-700 border-t-cyan-500 spin mx-auto mb-3"></div>
-      <div class="text-slate-400 text-sm" id="vid-status">Génération des images… 0/${nFrames}</div>
-    </div>
-    <div class="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all" id="vid-progress" style="width:0%"></div>`;
-
-  const bar = $('#vid-progress');
-  const status = $('#vid-status');
-
-  try {
-    const blobs = [];
-    const baseSeed = Math.floor(Math.random() * 100000);
-    for (let i = 0; i < nFrames; i++){
-      const url = buildImageURL(prompt, { width: w, height: h, seed: baseSeed + i * 137, model });
-      const blob = await fetchImageBlobWithRetry(url, 1);
-      blobs.push(blob);
-      if (bar) bar.style.width = ((i + 1) / nFrames * 55) + '%';
-      if (status) status.textContent = `Génération des images… ${i+1}/${nFrames}`;
-    }
-
-    if (status) status.textContent = 'Animation et encodage…';
-    if (bar) bar.style.width = '70%';
-
-    // Encode
-    const images = await Promise.all(blobs.map(b => new Promise((res, rej) => {
-      const im = new Image();
-      im.onload = () => res(im);
-      im.onerror = rej;
-      im.src = blobToObjectURL(b);
-    })));
-
-    const canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext('2d');
-
-    const fps = 25;
-    const totalFrames = duration * fps;
-    const perImage = totalFrames / nFrames;
-
-    const stream = canvas.captureStream(fps);
-    let mime = 'video/webm;codecs=vp9';
-    if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp8';
-    if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
-
-    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 5_000_000 });
-    const chunks = [];
-    rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-    const done = new Promise(res => rec.onstop = res);
-
-    stage.innerHTML = '';
-    canvas.style.maxWidth = '100%';
-    canvas.style.borderRadius = '12px';
-    stage.appendChild(canvas);
-
-    rec.start(100);
-
-    for (let f = 0; f < totalFrames; f++){
-      const t = f / perImage;
-      const idx = Math.min(Math.floor(t), nFrames - 1);
-      const nxt = Math.min(idx + 1, nFrames - 1);
-      const alpha = Math.min(t - idx, 1);
-      const zoom = 1 + 0.05 * state.motion * (f / totalFrames);
-
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, w, h);
-
-      const draw = (img, a, z) => {
-        ctx.globalAlpha = a;
-        const ir = img.width / img.height;
-        const cr = w / h;
-        let dw, dh;
-        if (ir > cr){ dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
-        dw *= z; dh *= z;
-        ctx.drawImage(img, (w-dw)/2, (h-dh)/2, dw, dh);
-      };
-      draw(images[idx], 1, zoom);
-      if (alpha > 0 && nxt !== idx) draw(images[nxt], alpha, zoom);
-
-      if (bar) bar.style.width = (70 + (f / totalFrames) * 30) + '%';
-      await new Promise(r => setTimeout(r, 1000 / fps));
-    }
-
-    rec.stop();
-    await done;
-
-    const blob = new Blob(chunks, { type:'video/webm' });
-    const objUrl = blobToObjectURL(blob);
-    state.lastVideoBlob = { url: objUrl, blob };
-
-    const video = document.createElement('video');
-    video.src = objUrl;
-    video.controls = true;
-    video.autoplay = true;
-    video.loop = true;
-    video.className = 'max-w-full rounded-xl shadow-2xl';
-    video.style.maxHeight = '60vh';
-
-    stage.innerHTML = '';
-    stage.appendChild(video);
-    $('#vid-download').disabled = false;
-
-    toast('Vidéo générée 🎬', 'ok');
-  } catch(err){
-    console.error(err);
-    stage.innerHTML = `<div class="text-center text-rose-400 text-sm p-6">
-      ⚠️ ${escapeHTML(err.message)}<br>
-      <span class="text-xs text-slate-500 mt-2 block">Réduis le nombre d'images ou la résolution si le problème persiste.</span>
-    </div>`;
-    toast('Erreur vidéo : ' + err.message, 'err');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-$('#vid-download').addEventListener('click', () => {
-  if (!state.lastVideoBlob) return;
-  const a = document.createElement('a');
-  a.href = state.lastVideoBlob.url;
-  a.download = 'nexus-video-' + Date.now() + '.webm';
-  a.click();
-  toast('Téléchargement lancé', 'ok');
-});
-
-/* ============================================================
-   VOIX
-   ============================================================ */
-const micBtn = $('#mic-btn');
-const transcriptEl = $('#transcript');
-let recognition = null;
-let recording = false;
-let finalText = '';
-
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.lang = 'fr-FR';
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.onresult = e => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++){
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) finalText += t + ' ';
-      else interim += t;
-    }
-    transcriptEl.textContent = (finalText + interim).trim() || '…';
-  };
-  recognition.onerror = e => { toast('Erreur micro : ' + e.error, 'err'); stopRec(); };
-  recognition.onend = () => { if (recording) recognition.start(); };
-} else {
-  micBtn.disabled = true;
-  transcriptEl.textContent = "Reconnaissance vocale non supportée.";
-}
-
-function stopRec(){
-  recording = false;
-  micBtn.classList.remove('pulse-rec');
-  micBtn.style.background = '';
-  micBtn.textContent = '🎙️';
-  if (recognition) try { recognition.stop(); } catch(_){}
-}
-
-micBtn.addEventListener('click', () => {
-  if (!recognition){ toast('Non supporté', 'err'); return; }
-  if (recording){ stopRec(); return; }
-  recording = true;
-  finalText = '';
-  transcriptEl.textContent = '…';
-  micBtn.classList.add('pulse-rec');
-  micBtn.style.background = 'linear-gradient(135deg, #f87171, #dc2626)';
-  micBtn.textContent = '⏹️';
-  try { recognition.start(); } catch(_){}
-  toast('Écoute en cours…', 'ok');
-});
-
-$('#use-transcript').addEventListener('click', () => {
-  const txt = transcriptEl.textContent.trim();
-  if (!txt || txt === '…'){ toast('Rien à envoyer', 'err'); return; }
-  switchView('chat');
-  promptInput.value = txt;
-  autoResize(promptInput);
-  promptInput.focus();
-  toast('Texte transféré au chat', 'ok');
-});
-
-/* TTS */
-const ttsVoiceSel = $('#tts-voice');
-let voices = [];
-function loadVoices(){
-  voices = speechSynthesis.getVoices();
-  ttsVoiceSel.innerHTML = '';
-  voices.forEach((v, i) => {
-    const o = document.createElement('option');
-    o.value = i;
-    o.textContent = `${v.name} (${v.lang})`;
-    if (v.lang.startsWith('fr')) o.selected = true;
-    ttsVoiceSel.appendChild(o);
-  });
-}
-loadVoices();
-speechSynthesis.onvoiceschanged = loadVoices;
-
-$('#tts-speak').addEventListener('click', () => {
-  const text = $('#tts-text').value.trim();
-  if (!text){ toast('Écris un texte à lire', 'err'); return; }
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  const v = voices[+ttsVoiceSel.value];
-  if (v) u.voice = v;
-  u.rate = +$('#tts-rate').value;
-  u.pitch = +$('#tts-pitch').value;
-  speechSynthesis.speak(u);
-  toast('Lecture en cours…', 'ok');
-});
-$('#tts-stop').addEventListener('click', () => speechSynthesis.cancel());
-
-/* ============================================================
-   PARAMÈTRES
-   ============================================================ */
-function fillSettingsSelects(){
-  // Remplir les selects texte partout
-  ['#chat-model', '#set-text-model', '#set-orch-model', '#set-synth-model'].forEach(sel => {
-    const el = $(sel);
-    if (!el) return;
-    const cur = el.value;
-    el.innerHTML = '';
-    TEXT_MODELS.forEach(m => {
-      const o = document.createElement('option');
-      o.value = m.id; o.textContent = m.name;
-      el.appendChild(o);
-    });
-    if (cur) el.value = cur;
-  });
-
-  $('#chat-model').value = state.settings.textModel;
-  $('#set-text-model').value = state.settings.textModel;
-  $('#set-orch-model').value = state.settings.orchModel;
-  $('#set-synth-model').value = state.settings.synthModel;
-  $('#set-max-tasks').value = state.settings.maxTasks;
-  $('#set-system').value = state.settings.systemPrompt;
-  $('#chat-model').disabled = state.orchestrator;
-
-  $('#set-text-model').onchange = e => { state.settings.textModel = e.target.value; saveState(); };
-  $('#set-orch-model').onchange = e => { state.settings.orchModel = e.target.value; saveState(); };
-  $('#set-synth-model').onchange = e => { state.settings.synthModel = e.target.value; saveState(); };
-  $('#set-max-tasks').oninput = e => {
-    state.settings.maxTasks = Math.min(Math.max(+e.target.value || 4, 1), 6);
+    const msg = conv.messages[idx];
+    msg.content = msg.content.trimEnd() + '\n\n' + continuation;
     saveState();
-  };
-  $('#set-system').oninput = e => { state.settings.systemPrompt = e.target.value; saveState(); };
-  $('#chat-model').onchange = e => { state.settings.textModel = e.target.value; saveState(); };
+    renderChat();
+    toast('✅ Continuation ajoutée', 'ok');
+  } catch(e){
+    toast('Erreur : ' + e.message, 'err');
+  } finally {
+    state.busy = false;
+    sendBtn.disabled = false;
+    updateSubtitle();
+  }
 }
 
-$('#export-btn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(state.conversations, null, 2)], { type:'application/json' });
+function editUserMessage(msg){
+  const conv = getCurrent();
+  if (!conv || state.busy) return;
+  const idx = conv.messages.findIndex(m => m.id === msg.id);
+  if (idx === -1) return;
+
+  promptInput.value = msg.content;
+  autoResize(promptInput);
+  updateCharCount();
+  promptInput.focus();
+
+  // Supprime ce message et tout ce qui suit
+  conv.messages.splice(idx);
+  state.attachment = null;
+  if (msg.attachments?.length){
+    state.attachment = msg.attachments[0];
+    renderAttachmentPreview();
+  }
+  saveState();
+  renderChat();
+  toast('Message chargé dans l\'éditeur', 'ok');
+}
+
+/* ============================================================
+   HISTORY GRID
+   ============================================================ */
+function renderHistoryGrid(){
+  const grid = $('#history-grid');
+  if (!grid) return;
+
+  const q = state.searchQuery.toLowerCase().trim();
+  let list = state.conversations;
+
+  if (q){
+    list = list.filter(c =>
+      c.title.toLowerCase().includes(q) ||
+      c.messages.some(m => m.content.toLowerCase().includes(q))
+    );
+  }
+
+  if (!list.length){
+    grid.innerHTML = `
+      <div class="col-span-full text-center py-16 text-slate-500">
+        <div class="text-4xl mb-3">${q ? '🔍' : '💬'}</div>
+        <div class="text-sm">${q ? 'Aucun résultat.' : 'Aucune conversation. Crée-en une !'}</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  list.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'conv-card' + (c.id === state.currentId ? ' active' : '');
+
+    const preview = c.messages.find(m => m.role === 'user')?.content || 'Conversation vide';
+    const model = c.messages.find(m => m.role === 'assistant')?.model || '';
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-2">
+        <h3 class="text-sm font-bold text-white truncate flex-1 min-w-0">${escapeHTML(c.title)}</h3>
+        <button class="delete-conv text-slate-500 hover:text-rose-400 px-1 leading-none text-lg flex-shrink-0 transition" title="Supprimer">×</button>
+      </div>
+      <p class="text-xs text-slate-400 leading-relaxed line-clamp-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escapeHTML(preview)}</p>
+      <div class="flex items-center gap-2 flex-wrap mt-auto pt-2">
+        <span class="badge badge-cyan">${c.messages.length} msg</span>
+        ${model ? `<span class="badge badge-violet">${escapeHTML(model)}</span>` : ''}
+        <span class="text-[10px] text-slate-500 ml-auto">${formatDate(c.updatedAt)}</span>
+      </div>`;
+
+    card.addEventListener('click', () => selectConversation(c.id));
+    card.querySelector('.delete-conv').addEventListener('click', e => deleteConversation(c.id, e));
+
+    grid.appendChild(card);
+  });
+}
+
+$('#history-search').addEventListener('input', debounce(e => {
+  state.searchQuery = e.target.value;
+  renderHistoryGrid();
+}, 200));
+
+/* ============================================================
+   EXPORTS
+   ============================================================ */
+function exportConversationMD(conv){
+  let md = `# ${conv.title}\n\n`;
+  md += `> Créé le ${new Date(conv.createdAt).toLocaleString('fr-FR')} · ${conv.messages.length} messages\n\n---\n\n`;
+  conv.messages.forEach(m => {
+    if (m.role === 'user'){
+      md += `## 👤 Utilisateur\n\n${m.content}\n\n`;
+      if (m.attachments?.length){
+        m.attachments.forEach(a => {
+          md += `> 📎 Fichier joint : **${a.name}** (${formatBytes(a.size)})\n\n`;
+        });
+      }
+    } else {
+      md += `## ✦ Assistant\n\n${m.content}\n\n`;
+      if (m.model) md += `> Modèle : ${m.model}\n\n`;
+    }
+    md += `---\n\n`;
+  });
+  return md;
+}
+
+function exportConversationJSON(conv){
+  return JSON.stringify(conv, null, 2);
+}
+
+function exportConversationTXT(conv){
+  let txt = `${conv.title}\n${'='.repeat(conv.title.length)}\n\n`;
+  conv.messages.forEach(m => {
+    txt += `[${m.role === 'user' ? 'UTILISATEUR' : 'ASSISTANT'}]\n${m.content}\n\n`;
+    if (m.attachments?.length){
+      m.attachments.forEach(a => txt += `  [Fichier joint : ${a.name}]\n`);
+    }
+    txt += '-'.repeat(60) + '\n\n';
+  });
+  return txt;
+}
+
+async function exportConversationZIP(conv){
+  const zip = new JSZip();
+  let count = 0;
+
+  // Ajoute le markdown de la conversation
+  zip.file('conversation.md', exportConversationMD(conv));
+  count++;
+
+  // Extrait tous les code blocks
+  conv.messages.forEach((msg, idx) => {
+    if (msg.role !== 'assistant') return;
+    const regex = /```(\w*)\n([\s\S]*?)```/g;
+    let m;
+    while ((m = regex.exec(msg.content)) !== null){
+      const lang = m[1] || 'text';
+      const code = m[2];
+      let filename = extractFilename(code, lang);
+      // Évite les doublons
+      let base = filename.replace(/(\.[^.]+)?$/, '');
+      let ext = (filename.match(/\.[^.]+$/) || [''])[0];
+      let final = filename;
+      let i = 1;
+      while (zip.file(final)){
+        final = `${base}_${i}${ext}`;
+        i++;
+      }
+      zip.file(final, code);
+      count++;
+    }
+  });
+
+  if (count === 1){
+    toast('Aucun code à exporter', 'warn');
+    return;
+  }
+
+  const blob = await zip.generateAsync({ type:'blob' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'nexus-conversations-' + Date.now() + '.json';
+  a.download = `nexus-${conv.title.slice(0, 40).replace(/[^\w]/g, '_')}-${Date.now()}.zip`;
   a.click();
-  toast('Export lancé', 'ok');
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast(`📦 ${count} fichier(s) exporté(s)`, 'ok');
+}
+
+function downloadText(content, filename, mime = 'text/plain'){
+  const blob = new Blob([content], { type: mime + ';charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* Export menu */
+$('#export-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  $('#export-menu').classList.toggle('show');
+});
+document.addEventListener('click', () => $('#export-menu').classList.remove('show'));
+
+$$('#export-menu .dropdown-item').forEach(item => {
+  item.addEventListener('click', async () => {
+    const conv = getCurrent();
+    if (!conv || !conv.messages.length){ toast('Rien à exporter', 'warn'); return; }
+    const type = item.dataset.export;
+    const safe = conv.title.slice(0, 40).replace(/[^\w\-]/g, '_');
+
+    if (type === 'md') downloadText(exportConversationMD(conv), `${safe}.md`, 'text/markdown');
+    if (type === 'json') downloadText(exportConversationJSON(conv), `${safe}.json`, 'application/json');
+    if (type === 'txt') downloadText(exportConversationTXT(conv), `${safe}.txt`, 'text/plain');
+    if (type === 'zip') await exportConversationZIP(conv);
+    $('#export-menu').classList.remove('show');
+  });
 });
 
+/* Export all */
+$('#export-all-btn').addEventListener('click', () => {
+  if (!state.conversations.length){ toast('Aucune conversation', 'warn'); return; }
+  const data = {
+    exportedAt: new Date().toISOString(),
+    version: 1,
+    settings: state.settings,
+    conversations: state.conversations,
+  };
+  downloadText(JSON.stringify(data, null, 2), `nexus-backup-${Date.now()}.json`, 'application/json');
+  toast('Sauvegarde complète exportée', 'ok');
+});
+
+/* Clear all */
 $('#clear-all-btn').addEventListener('click', () => {
-  if (!confirm('Effacer toutes les conversations ?')) return;
+  if (!confirm('Effacer TOUTES les conversations et réinitialiser les paramètres ?')) return;
   localStorage.removeItem(STORAGE_KEY);
   state.conversations = [];
   state.currentId = null;
+  state.settings = {
+    textModel:'openai',
+    orchModel:'openai-fast',
+    synthModel:'openai',
+    maxTasks:4,
+    temperature:0.7,
+    maxTokens:4096,
+    systemPrompt:SYSTEM_PRESETS[0].prompt,
+    systemPreset:'default',
+  };
   newConversation();
+  fillAllSelects();
   toast('Tout a été effacé', 'ok');
+});
+
+/* ============================================================
+   SETTINGS — SELECTS
+   ============================================================ */
+function buildModelSelect(el, currentValue){
+  el.innerHTML = '';
+  const groups = {};
+  TEXT_MODELS.forEach(m => {
+    if (!groups[m.tag]) groups[m.tag] = [];
+    groups[m.tag].push(m);
+  });
+  Object.keys(groups).forEach(tag => {
+    const og = document.createElement('optgroup');
+    og.label = TAG_LABELS[tag] || tag;
+    groups[tag].forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.id;
+      o.textContent = `${m.icon} ${m.name}`;
+      og.appendChild(o);
+    });
+    el.appendChild(og);
+  });
+  if (currentValue) el.value = currentValue;
+}
+
+function fillAllSelects(){
+  buildModelSelect($('#chat-model'), state.settings.textModel);
+  buildModelSelect($('#set-text-model'), state.settings.textModel);
+  buildModelSelect($('#set-orch-model'), state.settings.orchModel);
+  buildModelSelect($('#set-synth-model'), state.settings.synthModel);
+
+  $('#chat-model').disabled = state.orchestrator;
+  $('#set-max-tasks').value = state.settings.maxTasks;
+  $('#set-system').value = state.settings.systemPrompt;
+  $('#set-temp').value = state.settings.temperature;
+  $('#temp-val').textContent = state.settings.temperature.toFixed(1);
+  $('#set-tokens').value = state.settings.maxTokens;
+  $('#tokens-val').textContent = state.settings.maxTokens;
+
+  renderSystemPresets();
+}
+
+function renderSystemPresets(){
+  const box = $('#system-presets');
+  box.innerHTML = '';
+  SYSTEM_PRESETS.forEach(p => {
+    const chip = document.createElement('span');
+    chip.className = 'chip' + (state.settings.systemPreset === p.id ? ' active' : '');
+    chip.textContent = p.name;
+    chip.addEventListener('click', () => {
+      state.settings.systemPreset = p.id;
+      if (p.id !== 'custom'){
+        state.settings.systemPrompt = p.prompt;
+        $('#set-system').value = p.prompt;
+      }
+      renderSystemPresets();
+      saveState();
+      updateSubtitle();
+    });
+    box.appendChild(chip);
+  });
+}
+
+/* Attach settings events */
+$('#chat-model').addEventListener('change', e => {
+  state.settings.textModel = e.target.value;
+  saveState();
+  updateSubtitle();
+});
+$('#set-text-model').addEventListener('change', e => {
+  state.settings.textModel = e.target.value;
+  $('#chat-model').value = e.target.value;
+  saveState();
+  updateSubtitle();
+});
+$('#set-orch-model').addEventListener('change', e => {
+  state.settings.orchModel = e.target.value;
+  saveState();
+});
+$('#set-synth-model').addEventListener('change', e => {
+  state.settings.synthModel = e.target.value;
+  saveState();
+});
+$('#set-max-tasks').addEventListener('input', e => {
+  state.settings.maxTasks = Math.min(Math.max(+e.target.value || 4, 1), 6);
+  saveState();
+});
+$('#set-system').addEventListener('input', e => {
+  state.settings.systemPrompt = e.target.value;
+  state.settings.systemPreset = 'custom';
+  renderSystemPresets();
+  saveState();
+});
+$('#set-temp').addEventListener('input', e => {
+  state.settings.temperature = +e.target.value;
+  $('#temp-val').textContent = state.settings.temperature.toFixed(1);
+  saveState();
+});
+$('#set-tokens').addEventListener('input', e => {
+  state.settings.maxTokens = +e.target.value;
+  $('#tokens-val').textContent = state.settings.maxTokens;
+  saveState();
+});
+
+/* ============================================================
+   KEYBOARD SHORTCUTS
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  // Ctrl/Cmd + K → focus input
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k'){
+    e.preventDefault();
+    switchView('chat');
+    promptInput.focus();
+  }
+  // Ctrl/Cmd + Shift + O → nouvelle conversation
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'o'){
+    e.preventDefault();
+    newConversation();
+  }
+  // Esc → fermer menus
+  if (e.key === 'Escape'){
+    $('#export-menu').classList.remove('show');
+  }
 });
 
 /* ============================================================
@@ -1837,30 +2070,31 @@ $('#clear-all-btn').addEventListener('click', () => {
 function init(){
   loadState();
 
-  fillImageSelects();
-  fillSettingsSelects();
+  fillAllSelects();
 
   if (!state.conversations.length){
     newConversation();
   } else if (!state.currentId || !state.conversations.find(c => c.id === state.currentId)){
     state.currentId = state.conversations[0].id;
   }
-  renderChat();
 
   $('#orch-toggle').classList.toggle('on', state.orchestrator);
   $('#chat-model').disabled = state.orchestrator;
 
-  $('#history-modal').addEventListener('click', e => {
-    if (e.target === $('#history-modal')) closeHistory();
-  });
-  $('#lightbox').addEventListener('click', () => $('#lightbox').classList.remove('show'));
+  renderChat();
+  renderHistoryGrid();
+  updateCharCount();
+  updateCounters();
+  updateSubtitle();
 
   promptInput.focus();
 }
 
 init();
-console.log('%c✦ Nexus Orchestrator', 'font-size:18px;font-weight:bold;color:#06b6d4');
-console.log('%cMulti-IA · 100% gratuit · sans clé API', 'color:#34d399');
+
+console.log('%c✦ Nexus Text AI', 'font-size:20px;font-weight:bold;color:#06b6d4');
+console.log('%cAssistant textuel multi-IA · 100% gratuit · sans clé API', 'color:#34d399');
+console.log('%cRaccourcis : Ctrl+K (focus input) · Ctrl+Shift+O (nouvelle conversation)', 'color:#94a3b8');
 </script>
 </body>
 </html>
