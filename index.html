@@ -1,89 +1,117 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon IA Universelle Hub</title>
-    <!-- Tailwind CSS pour un design moderne style Claude.ai -->
+    <title>Claude-OS Cloud Hub (Puter.js)</title>
+    <!-- Tailwind CSS -->
     <script src="https://tailwindcss.com"></script>
-    <!-- Chargement de Puter.js : donne l'accès gratuit aux IA, stockage cloud et hébergement -->
-    <script src="https://puter.com"></script>
+    <!-- Script Puter.js CDN v2 officiel (Corrigé) -->
+    <script src="https://js.puter.com/v2/puter.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    </style>
 </head>
-<body class="bg-gray-900 text-gray-100 font-sans h-screen flex flex-col">
+<body class="bg-gray-950 text-gray-100 h-full flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
-    <!-- Barre supérieure -->
-    <header class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center shadow-md">
-        <h1 class="text-xl font-bold text-teal-400 flex items-center gap-2">
-            🚀 Hub IA Multi-Modèles
-        </h1>
+    <!-- En-tête style Claude -->
+    <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 px-6 py-4 flex flex-wrap justify-between items-center shadow-lg sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <label for="model-select" class="text-sm text-gray-400">Modèle :</label>
-            <select id="model-select" class="bg-gray-700 text-white rounded px-3 py-1.5 border border-gray-600 focus:outline-none focus:border-teal-500">
-                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Texte/Fichiers)</option>
-                <option value="gpt-4o">GPT-4o (Standard & Vision)</option>
-                <option value="deepseek-v3">DeepSeek V3 (Code & Logique)</option>
-                <option value="flux-schnell">Flux Schnell (Génération d'images)</option>
-            </select>
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <span class="text-white font-bold text-lg">✨</span>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">Claude-OS Cloud Hub</h1>
+                <p class="text-xs text-gray-400">Propulsé par Puter.js (Zéro clé API, 100% Cloud)</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 mt-2 sm:mt-0">
+            <div class="flex items-center bg-gray-900 border border-gray-700 rounded-xl px-3 py-1.5 shadow-inner">
+                <span class="text-xs text-indigo-400 font-medium mr-2">Modèle :</span>
+                <select id="model-select" class="bg-transparent text-sm text-white focus:outline-none cursor-pointer">
+                    <option value="claude-3-5-sonnet" class="bg-gray-900">Claude 3.5 Sonnet (Texte & Fichiers)</option>
+                    <option value="gpt-4o" class="bg-gray-900">GPT-4o (Vision & Analyse)</option>
+                    <option value="deepseek-v3" class="bg-gray-900">DeepSeek V3 (Code & Logique)</option>
+                    <option value="flux-schnell" class="bg-gray-900">Flux Schnell (Génération d'images)</option>
+                </select>
+            </div>
         </div>
     </header>
 
-    <!-- Zone principale : Chat & Historique -->
-    <main id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-4xl mx-auto w-full">
+    <!-- Zone principale de discussion -->
+    <main id="chat-box" class="flex-1 overflow-y-auto px-4 py-6 space-y-6 max-w-4xl mx-auto w-full">
         <!-- Message de bienvenue -->
-        <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow shadow-teal-500/20">
-            <p class="text-teal-300 font-semibold mb-1">Bienvenue dans votre espace IA !</p>
-            <p class="text-gray-400 text-sm">Ce hub s'exécute entièrement dans le cloud sans surcharger votre vieux PC. Vous pouvez lui demander du texte, du code, d'analyser vos fichiers/images ou de générer des images d'art avec Flux.</p>
+        <div class="bg-gray-900/90 border border-gray-800 p-6 rounded-2xl shadow-xl backdrop-blur-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <h2 class="text-xl font-bold text-indigo-300 mb-2 flex items-center gap-2">👋 Bienvenue dans votre espace IA universel</h2>
+            <p class="text-gray-300 text-sm leading-relaxed mb-4">
+                Cette interface s'exécute directement dans votre navigateur sans surcharger votre PC. Lors de votre première requête, une petite fenêtre de connexion sécurisée Puter.com apparaîtra pour activer l'accès gratuit aux modèles.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-400">
+                <div class="bg-gray-800/60 border border-gray-700/50 p-3 rounded-xl flex items-center gap-2">
+                    <span>📄</span> Analyse de PDF & Code
+                </div>
+                <div class="bg-gray-800/60 border border-gray-700/50 p-3 rounded-xl flex items-center gap-2">
+                    <span>⚡</span> Génération de code HTML/JS
+                </div>
+                <div class="bg-gray-800/60 border border-gray-700/50 p-3 rounded-xl flex items-center gap-2">
+                    <span>🎨</span> Création d'images par IA
+                </div>
+            </div>
         </div>
     </main>
 
-    <!-- Zone d'affichage des fichiers téléversés en attente -->
-    <div id="file-preview-zone" class="hidden max-w-4xl mx-auto w-full px-4 py-2 bg-gray-800 border-t border-gray-700 flex items-center gap-3">
-        <span class="text-xs bg-teal-600 text-white px-2 py-1 rounded" id="file-badge">Fichier chargé</span>
-        <span class="text-sm text-gray-300 truncate" id="file-name-display">nom_du_fichier.pdf</span>
-        <button onclick="clearAttachedFile()" class="text-red-400 hover:text-red-300 text-xs ml-auto">Supprimer</button>
+    <!-- Aperçu du fichier joint -->
+    <div id="file-preview-zone" class="hidden max-w-4xl mx-auto w-full px-6 py-2 bg-gray-900/90 border-t border-gray-800 flex items-center gap-3">
+        <span class="text-xs bg-indigo-600/80 text-white px-2.5 py-1 rounded-lg font-medium" id="file-badge">Fichier</span>
+        <span class="text-sm text-gray-300 truncate font-mono" id="file-name-display">nom_fichier</span>
+        <button onclick="clearAttachedFile()" class="text-red-400 hover:text-red-300 text-xs ml-auto bg-red-950/40 border border-red-900/50 px-2 py-1 rounded transition">Supprimer</button>
     </div>
 
-    <!-- Barre de saisie inférieure -->
-    <footer class="bg-gray-800 p-4 border-t border-gray-700 sticky bottom-0">
-        <div class="max-w-4xl mx-auto w-full flex items-center gap-2 bg-gray-700 rounded-lg p-2 border border-gray-600 focus-within:border-teal-500">
-            <!-- Bouton Trombone pour ajouter des images ou PDF -->
-            <button onclick="triggerFileInput()" class="p-2 text-gray-400 hover:text-teal-400 transition" title="Ajouter un fichier (Image, PDF, Code)">
-                📎
+    <!-- Barre de saisie -->
+    <footer class="bg-gray-900/80 backdrop-blur-md border-t border-gray-800 p-4 sticky bottom-0 z-40">
+        <div class="max-w-4xl mx-auto w-full flex items-end gap-3 bg-gray-900 border border-gray-700/80 rounded-2xl p-3 shadow-2xl focus-within:border-indigo-500 transition">
+            <!-- Bouton fichier -->
+            <button onclick="triggerFileInput()" class="p-2 text-gray-400 hover:text-indigo-400 transition rounded-xl hover:bg-gray-800" title="Joindre un fichier (PDF, Image, Code)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
             </button>
             <input type="file" id="file-input" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.txt,.js,.html,.css" onchange="handleFileSelect(event)">
 
-            <!-- Champ texte -->
-            <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none resize-none px-2 py-1" placeholder="Posez votre question ou demandez une image..."></textarea>
+            <!-- Zone de texte -->
+            <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none resize-none py-2 px-1 text-sm max-h-32" placeholder="Écrivez votre message, demandez du code ou une image..."></textarea>
             
             <!-- Bouton Envoyer -->
-            <button onclick="processUserRequest()" id="send-btn" class="bg-teal-500 hover:bg-teal-600 text-gray-900 font-bold px-4 py-2 rounded-md transition shadow shadow-teal-500/50">
+            <button onclick="processUserRequest()" id="send-btn" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-medium px-5 py-2.5 rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center justify-center text-sm">
                 Envoyer
             </button>
         </div>
     </footer>
 
-    <!-- Logique applicative JavaScript interfaçant Puter.js -->
+    <!-- Script de logique -->
     <script>
         let attachedFileBase64 = null;
         let attachedFileName = "";
         let attachedFileType = "";
 
-        // Ajuste automatiquement la hauteur du champ texte
         const tx = document.getElementById("user-input");
         tx.addEventListener("input", function() {
             this.style.height = "auto";
-            this.style.height = (this.scrollHeight) + "px";
+            this.style.height = (Math.min(this.scrollHeight, 120)) + "px";
         });
 
         function triggerFileInput() {
             document.getElementById('file-input').click();
         }
 
-        // Lecture du fichier (PDF ou Image) et conversion en base64 pour l'IA
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             attachedFileName = file.name;
             attachedFileType = file.type;
 
@@ -91,7 +119,7 @@
             reader.onload = function(e) {
                 attachedFileBase64 = e.target.result;
                 document.getElementById('file-name-display').innerText = attachedFileName;
-                document.getElementById('file-badge').innerText = file.type.includes('pdf') ? 'PDF' : 'IMAGE';
+                document.getElementById('file-badge').innerText = file.type.includes('pdf') ? 'PDF' : 'IMAGE/CODE';
                 document.getElementById('file-preview-zone').classList.remove('hidden');
             };
             reader.readAsDataURL(file);
@@ -110,21 +138,31 @@
             const msgDiv = document.createElement('div');
             
             if (sender === 'user') {
-                msgDiv.className = 'bg-teal-900/40 border border-teal-800 p-4 rounded-lg ml-12 text-gray-100';
-                msgDiv.innerHTML = `<strong>Vous :</strong> <p class="mt-1 whitespace-pre-wrap">${content}</p>`;
+                msgDiv.className = 'flex justify-end';
+                msgDiv.innerHTML = `
+                    <div class="bg-indigo-600/90 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-2xl shadow-md text-sm whitespace-pre-wrap leading-relaxed">
+                        ${content}
+                    </div>`;
             } else {
-                msgDiv.className = 'bg-gray-800 border border-gray-700 p-4 rounded-lg mr-12 text-gray-100 shadow-sm';
+                msgDiv.className = 'flex justify-start';
                 if(isImage) {
-                    msgDiv.innerHTML = `<strong>IA :</strong> <div class="mt-2"><img src="${content}" alt="Image générée" class="rounded max-w-full h-auto max-h-96 border border-gray-600 shadow-lg"/></div>`;
+                    msgDiv.innerHTML = `
+                        <div class="bg-gray-900 border border-gray-800 p-4 rounded-2xl rounded-tl-sm max-w-2xl shadow-xl">
+                            <p class="text-xs text-indigo-400 font-semibold mb-2">✨ Image générée par Flux</p>
+                            <img src="${content}" alt="Image IA" class="rounded-xl max-w-full h-auto border border-gray-700 shadow-lg"/>
+                        </div>`;
                 } else {
-                    msgDiv.innerHTML = `<strong>IA :</strong> <div class="mt-1 whitespace-pre-wrap text-gray-200">${content}</div>`;
+                    msgDiv.innerHTML = `
+                        <div class="bg-gray-900 border border-gray-800 px-6 py-4 rounded-2xl rounded-tl-sm max-w-3xl shadow-xl text-gray-200 text-sm leading-relaxed whitespace-pre-wrap font-sans">
+                            <span class="block text-xs font-semibold text-indigo-400 mb-1">Claude-OS</span>
+                            ${content}
+                        </div>`;
                 }
             }
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // Traitement de l'envoi
         async function processUserRequest() {
             const inputField = document.getElementById('user-input');
             const prompt = inputField.value.trim();
@@ -132,45 +170,42 @@
 
             if (!prompt && !attachedFileBase64) return;
 
-            // Afficher le message de l'utilisateur
             let userDisplayHtml = prompt;
-            if(attachedFileName) userDisplayHtml += `<br><span class="text-xs text-teal-400">📎 Fichier joint : ${attachedFileName}</span>`;
+            if(attachedFileName) {
+                userDisplayHtml += `<br><span class="text-xs text-indigo-200 font-mono mt-1 block">📎 ${attachedFileName}</span>`;
+            }
             appendMessage('user', userDisplayHtml);
 
-            // Vider l'entrée et bloquer le bouton
             inputField.value = "";
             inputField.style.height = "auto";
-            document.getElementById('send-btn').disabled = true;
-            document.getElementById('send-btn').innerText = "Calcul...";
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.disabled = true;
+            sendBtn.innerText = "Réflexion...";
 
             try {
-                // CAS 1 : GÉNÉRATION D'IMAGE (Modèle Flux ou demande explicite)
-                if (selectedModel === 'flux-schnell' || prompt.toLowerCase().startsWith('/image ')) {
-                    const cleanPrompt = prompt.replace('/image ', '');
-                    // Appel de l'API de génération d'image cloud gratuite de Puter
-                    const imageResult = await puter.ai.txt2img(cleanPrompt || "Un paysage futuriste de science-fiction");
-                    appendMessage('ia', imageResult.src, true);
-                } 
-                // CAS 2 : CHAT CLASSIQUE, ANALYSE DE CODE, PDF OU VISION
-                else {
-                    let finalPrompt = prompt;
-                    
-                    // Si on a un fichier attaché, on l'injecte dans le contexte de la requête de façon cloud
-                    if (attachedFileBase64) {
-                        finalPrompt = `[Fichier joint: ${attachedFileName} (Type: ${attachedFileType}) - Base64 data: ${attachedFileBase64}]\n\nQuestion de l'utilisateur : ${prompt}`;
-                    }
+                // Vérifier si Puter est chargé
+                if (typeof puter === 'undefined') {
+                    throw new Error("Puter.js ne s'est pas chargé correctement. Vérifiez votre connexion internet.");
+                }
 
-                    // Exécute le modèle de chat Cloud sélectionné via Puter
+                if (selectedModel === 'flux-schnell') {
+                    const imageResult = await puter.ai.txt2img(prompt || "Futuristic AI hub interface");
+                    appendMessage('ia', imageResult.src, true);
+                } else {
+                    let finalPrompt = prompt;
+                    if (attachedFileBase64) {
+                        finalPrompt = `[Fichier joint: ${attachedFileName} (${attachedFileType}) - Data: ${attachedFileBase64}]\n\nRequête : ${prompt}`;
+                    }
                     const response = await puter.ai.chat(finalPrompt, { model: selectedModel });
                     appendMessage('ia', response);
                 }
             } catch (error) {
                 console.error(error);
-                appendMessage('ia', "❌ Une erreur s'est produite lors de la connexion au cloud de l'IA : " + error.message);
+                appendMessage('ia', "❌ Erreur de connexion au cloud : " + error.message + "\n\n(Astuce : Assurez-vous d'autoriser la fenêtre pop-up de connexion Puter si c'est votre première utilisation).");
             } finally {
                 clearAttachedFile();
-                document.getElementById('send-btn').disabled = false;
-                document.getElementById('send-btn').innerText = "Envoyer";
+                sendBtn.disabled = false;
+                sendBtn.innerText = "Envoyer";
             }
         }
     </script>
