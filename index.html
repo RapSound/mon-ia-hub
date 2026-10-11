@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon IA Universelle Hub</title>
+    <!-- Tailwind CSS pour un design moderne style Claude.ai -->
+    <script src="https://tailwindcss.com"></script>
+    <!-- Chargement de Puter.js : donne l'accès gratuit aux IA, stockage cloud et hébergement -->
+    <script src="https://puter.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans h-screen flex flex-col">
+
+    <!-- Barre supérieure -->
+    <header class="bg-gray-800 p-4 border-b border-gray-700 flex justify-between items-center shadow-md">
+        <h1 class="text-xl font-bold text-teal-400 flex items-center gap-2">
+            🚀 Hub IA Multi-Modèles
+        </h1>
+        <div class="flex items-center gap-3">
+            <label for="model-select" class="text-sm text-gray-400">Modèle :</label>
+            <select id="model-select" class="bg-gray-700 text-white rounded px-3 py-1.5 border border-gray-600 focus:outline-none focus:border-teal-500">
+                <option value="claude-3-5-sonnet">Claude 3.5 Sonnet (Texte/Fichiers)</option>
+                <option value="gpt-4o">GPT-4o (Standard & Vision)</option>
+                <option value="deepseek-v3">DeepSeek V3 (Code & Logique)</option>
+                <option value="flux-schnell">Flux Schnell (Génération d'images)</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Zone principale : Chat & Historique -->
+    <main id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-4xl mx-auto w-full">
+        <!-- Message de bienvenue -->
+        <div class="bg-gray-800 p-4 rounded-lg border border-gray-700 shadow shadow-teal-500/20">
+            <p class="text-teal-300 font-semibold mb-1">Bienvenue dans votre espace IA !</p>
+            <p class="text-gray-400 text-sm">Ce hub s'exécute entièrement dans le cloud sans surcharger votre vieux PC. Vous pouvez lui demander du texte, du code, d'analyser vos fichiers/images ou de générer des images d'art avec Flux.</p>
+        </div>
+    </main>
+
+    <!-- Zone d'affichage des fichiers téléversés en attente -->
+    <div id="file-preview-zone" class="hidden max-w-4xl mx-auto w-full px-4 py-2 bg-gray-800 border-t border-gray-700 flex items-center gap-3">
+        <span class="text-xs bg-teal-600 text-white px-2 py-1 rounded" id="file-badge">Fichier chargé</span>
+        <span class="text-sm text-gray-300 truncate" id="file-name-display">nom_du_fichier.pdf</span>
+        <button onclick="clearAttachedFile()" class="text-red-400 hover:text-red-300 text-xs ml-auto">Supprimer</button>
+    </div>
+
+    <!-- Barre de saisie inférieure -->
+    <footer class="bg-gray-800 p-4 border-t border-gray-700 sticky bottom-0">
+        <div class="max-w-4xl mx-auto w-full flex items-center gap-2 bg-gray-700 rounded-lg p-2 border border-gray-600 focus-within:border-teal-500">
+            <!-- Bouton Trombone pour ajouter des images ou PDF -->
+            <button onclick="triggerFileInput()" class="p-2 text-gray-400 hover:text-teal-400 transition" title="Ajouter un fichier (Image, PDF, Code)">
+                📎
+            </button>
+            <input type="file" id="file-input" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.txt,.js,.html,.css" onchange="handleFileSelect(event)">
+
+            <!-- Champ texte -->
+            <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none resize-none px-2 py-1" placeholder="Posez votre question ou demandez une image..."></textarea>
+            
+            <!-- Bouton Envoyer -->
+            <button onclick="processUserRequest()" id="send-btn" class="bg-teal-500 hover:bg-teal-600 text-gray-900 font-bold px-4 py-2 rounded-md transition shadow shadow-teal-500/50">
+                Envoyer
+            </button>
+        </div>
+    </footer>
+
+    <!-- Logique applicative JavaScript interfaçant Puter.js -->
+    <script>
+        let attachedFileBase64 = null;
+        let attachedFileName = "";
+        let attachedFileType = "";
+
+        // Ajuste automatiquement la hauteur du champ texte
+        const tx = document.getElementById("user-input");
+        tx.addEventListener("input", function() {
+            this.style.height = "auto";
+            this.style.height = (this.scrollHeight) + "px";
+        });
+
+        function triggerFileInput() {
+            document.getElementById('file-input').click();
+        }
+
+        // Lecture du fichier (PDF ou Image) et conversion en base64 pour l'IA
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            attachedFileName = file.name;
+            attachedFileType = file.type;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                attachedFileBase64 = e.target.result;
+                document.getElementById('file-name-display').innerText = attachedFileName;
+                document.getElementById('file-badge').innerText = file.type.includes('pdf') ? 'PDF' : 'IMAGE';
+                document.getElementById('file-preview-zone').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearAttachedFile() {
+            attachedFileBase64 = null;
+            attachedFileName = "";
+            attachedFileType = "";
+            document.getElementById('file-input').value = "";
+            document.getElementById('file-preview-zone').classList.add('hidden');
+        }
+
+        function appendMessage(sender, content, isImage = false) {
+            const chatBox = document.getElementById('chat-box');
+            const msgDiv = document.createElement('div');
+            
+            if (sender === 'user') {
+                msgDiv.className = 'bg-teal-900/40 border border-teal-800 p-4 rounded-lg ml-12 text-gray-100';
+                msgDiv.innerHTML = `<strong>Vous :</strong> <p class="mt-1 whitespace-pre-wrap">${content}</p>`;
+            } else {
+                msgDiv.className = 'bg-gray-800 border border-gray-700 p-4 rounded-lg mr-12 text-gray-100 shadow-sm';
+                if(isImage) {
+                    msgDiv.innerHTML = `<strong>IA :</strong> <div class="mt-2"><img src="${content}" alt="Image générée" class="rounded max-w-full h-auto max-h-96 border border-gray-600 shadow-lg"/></div>`;
+                } else {
+                    msgDiv.innerHTML = `<strong>IA :</strong> <div class="mt-1 whitespace-pre-wrap text-gray-200">${content}</div>`;
+                }
+            }
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Traitement de l'envoi
+        async function processUserRequest() {
+            const inputField = document.getElementById('user-input');
+            const prompt = inputField.value.trim();
+            const selectedModel = document.getElementById('model-select').value;
+
+            if (!prompt && !attachedFileBase64) return;
+
+            // Afficher le message de l'utilisateur
+            let userDisplayHtml = prompt;
+            if(attachedFileName) userDisplayHtml += `<br><span class="text-xs text-teal-400">📎 Fichier joint : ${attachedFileName}</span>`;
+            appendMessage('user', userDisplayHtml);
+
+            // Vider l'entrée et bloquer le bouton
+            inputField.value = "";
+            inputField.style.height = "auto";
+            document.getElementById('send-btn').disabled = true;
+            document.getElementById('send-btn').innerText = "Calcul...";
+
+            try {
+                // CAS 1 : GÉNÉRATION D'IMAGE (Modèle Flux ou demande explicite)
+                if (selectedModel === 'flux-schnell' || prompt.toLowerCase().startsWith('/image ')) {
+                    const cleanPrompt = prompt.replace('/image ', '');
+                    // Appel de l'API de génération d'image cloud gratuite de Puter
+                    const imageResult = await puter.ai.txt2img(cleanPrompt || "Un paysage futuriste de science-fiction");
+                    appendMessage('ia', imageResult.src, true);
+                } 
+                // CAS 2 : CHAT CLASSIQUE, ANALYSE DE CODE, PDF OU VISION
+                else {
+                    let finalPrompt = prompt;
+                    
+                    // Si on a un fichier attaché, on l'injecte dans le contexte de la requête de façon cloud
+                    if (attachedFileBase64) {
+                        finalPrompt = `[Fichier joint: ${attachedFileName} (Type: ${attachedFileType}) - Base64 data: ${attachedFileBase64}]\n\nQuestion de l'utilisateur : ${prompt}`;
+                    }
+
+                    // Exécute le modèle de chat Cloud sélectionné via Puter
+                    const response = await puter.ai.chat(finalPrompt, { model: selectedModel });
+                    appendMessage('ia', response);
+                }
+            } catch (error) {
+                console.error(error);
+                appendMessage('ia', "❌ Une erreur s'est produite lors de la connexion au cloud de l'IA : " + error.message);
+            } finally {
+                clearAttachedFile();
+                document.getElementById('send-btn').disabled = false;
+                document.getElementById('send-btn').innerText = "Envoyer";
+            }
+        }
+    </script>
+</body>
+</html>
