@@ -1,163 +1,1415 @@
 <!DOCTYPE html>
 <html lang="fr" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenSource AI Hub - Robuste</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #07090e; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenSource AI Hub — Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Plus Jakarta Sans', sans-serif; }
+  code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+  .glass { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+  .animate-slide-in { animation: slideIn 0.25s ease; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin 0.8s linear infinite; }
+  @keyframes pulseRec { 0%,100% { box-shadow: 0 0 0 0 rgba(248,113,113,.55); } 50% { box-shadow: 0 0 0 18px rgba(248,113,113,0); } }
+  .pulse-rec { animation: pulseRec 1.4s infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .cursor-blink { display:inline-block; width:7px; height:15px; background:#06b6d4; border-radius:2px; vertical-align:text-bottom; animation: blink 0.9s infinite; margin-left:2px; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity:.4; } 30% { transform: translateY(-6px); opacity:1; } }
+  .dot { width:6px; height:6px; border-radius:50%; background:#64748b; animation: bounce 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay:.15s; }
+  .dot:nth-child(3) { animation-delay:.3s; }
+
+  .view { display: none; }
+  .view.active { display: flex; }
+
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(6,182,212,.18), rgba(79,70,229,.08));
+    color: #fff;
+    border-color: rgba(6,182,212,.4);
+  }
+
+  .msg-md p { margin: 0 0 10px; }
+  .msg-md p:last-child { margin: 0; }
+  .msg-md ul, .msg-md ol { margin: 8px 0 8px 20px; }
+  .msg-md li { margin: 4px 0; list-style: disc; }
+  .msg-md h1 { font-size: 1.15rem; font-weight: 700; margin: 14px 0 8px; }
+  .msg-md h2 { font-size: 1.05rem; font-weight: 700; margin: 12px 0 6px; }
+  .msg-md h3 { font-size: 1rem; font-weight: 600; margin: 10px 0 6px; }
+  .msg-md a { color: #22d3ee; text-decoration: underline; }
+  .msg-md pre { background: #060a14; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; overflow-x: auto; margin: 10px 0; }
+  .msg-md pre code { background: none; padding: 0; color: #e2e8f0; font-size: 12.5px; line-height: 1.6; }
+  .msg-md .inline-code { background: rgba(0,0,0,0.45); padding: 2px 6px; border-radius: 5px; color: #67e8f9; font-size: 12.5px; }
+
+  .chip { padding: 6px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 500; background: rgba(15,23,42,.6); border: 1px solid #1e293b; color: #94a3b8; cursor: pointer; transition: all .18s; user-select: none; }
+  .chip:hover { border-color: #334155; color: #e2e8f0; }
+  .chip.active { background: rgba(6,182,212,.18); border-color: rgba(6,182,212,.5); color: #fff; }
+
+  .field label { display:block; font-size: 10.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .input { width:100%; background: rgba(15,23,42,.6); border: 1px solid #1e293b; color: #e2e8f0; border-radius: 10px; padding: 9px 12px; font-size: 13px; outline: none; transition: border .18s, box-shadow .18s; }
+  .input:focus { border-color: rgba(6,182,212,.6); box-shadow: 0 0 0 3px rgba(6,182,212,.12); }
+  select.input { appearance: none; cursor: pointer; padding-right: 30px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 11px center; }
+  select.input option { background:#0f172a; color:#e2e8f0; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.65); backdrop-filter: blur(4px); z-index: 90; display: none; }
+  .modal-backdrop.show { display: flex; align-items: center; justify-content: center; padding: 16px; }
+</style>
 </head>
-<body class="bg-[#07090e] text-slate-100 h-full flex flex-col justify-between selection:bg-cyan-500 selection:text-white">
+<body class="bg-[#07090e] text-slate-100 h-full flex overflow-hidden">
 
-    <!-- En-tête -->
-    <header class="glass border-b border-slate-800/80 px-6 py-4 flex flex-wrap justify-between items-center sticky top-0 z-50 shadow-2xl">
-        <div class="flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-white/20">
-                <span class="text-white font-bold text-xl">⚡</span>
-            </div>
-            <div>
-                <h1 class="text-base font-bold tracking-tight bg-gradient-to-r from-white via-cyan-200 to-indigo-400 bg-clip-text text-transparent">OpenSource AI Hub</h1>
-                <div class="flex items-center gap-2 mt-0.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span class="text-[11px] text-slate-400 font-medium">Mode Robuste & Anti-Coupure</span>
-                </div>
-            </div>
-        </div>
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="w-16 md:w-56 flex-shrink-0 glass border-r border-slate-800/80 flex flex-col z-30">
+  <div class="p-3 md:p-4 flex items-center gap-3 border-b border-slate-800/60">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 ring-1 ring-white/20 flex-shrink-0">
+      <span class="text-white font-bold text-lg">⚡</span>
+    </div>
+    <div class="hidden md:block min-w-0">
+      <h1 class="text-sm font-bold bg-gradient-to-r from-white via-cyan-200 to-indigo-400 bg-clip-text text-transparent whitespace-nowrap">OpenSource AI</h1>
+      <p class="text-[10px] text-emerald-400 font-medium flex items-center gap-1.5 mt-0.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>100% gratuit
+      </p>
+    </div>
+  </div>
 
-        <div class="flex items-center gap-3 mt-3 sm:mt-0">
-            <div class="flex items-center bg-slate-900/90 border border-slate-800 rounded-2xl px-3.5 py-2 shadow-inner ring-1 ring-white/5">
-                <span class="text-xs text-cyan-400 font-semibold mr-2.5">Modèle</span>
-                <select id="model-select" class="bg-transparent text-xs sm:text-sm text-slate-200 font-medium focus:outline-none cursor-pointer">
-                    <optgroup label="🧠 Modèles Texte & Code" class="bg-slate-950 text-cyan-400 font-bold">
-                        <option value="openai" class="bg-slate-900 text-white">Llama / GPT (Standard)</option>
-                        <option value="deepseek" class="bg-slate-900 text-white">DeepSeek (Code & Logique)</option>
-                        <option value="mistral" class="bg-slate-900 text-white">Mistral AI (Européen)</option>
-                    </optgroup>
-                    <optgroup label="🎨 Génération d'Images" class="bg-slate-950 text-pink-400 font-bold">
-                        <option value="flux" class="bg-slate-900 text-white">Flux / Stable Diffusion (Image)</option>
-                    </optgroup>
-                </select>
-            </div>
-        </div>
+  <nav class="flex-1 p-2 md:p-3 space-y-1 overflow-y-auto">
+    <button class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="chat">
+      <span class="text-base">💬</span><span class="hidden md:inline">Chat</span>
+    </button>
+    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="image">
+      <span class="text-base">🎨</span><span class="hidden md:inline">Image</span>
+    </button>
+    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="video">
+      <span class="text-base">🎬</span><span class="hidden md:inline">Vidéo</span>
+    </button>
+    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="voice">
+      <span class="text-base">🎙️</span><span class="hidden md:inline">Voix</span>
+    </button>
+    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent transition text-sm font-medium" data-view="settings">
+      <span class="text-base">⚙️</span><span class="hidden md:inline">Paramètres</span>
+    </button>
+  </nav>
+
+  <div class="hidden md:block p-4 border-t border-slate-800/60 text-[11px] text-slate-500 leading-relaxed">
+    Aucune clé API.<br>Modèles open source gratuits.
+  </div>
+</aside>
+
+<!-- ==================== MAIN ==================== -->
+<main class="flex-1 flex flex-col min-w-0 min-h-0">
+
+  <!-- ============ CHAT VIEW ============ -->
+  <section id="view-chat" class="view active flex-1 flex-col min-h-0">
+    <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-2 flex-wrap">
+      <button id="new-chat-btn" class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition">
+        <span>＋</span><span class="hidden sm:inline">Nouvelle</span>
+      </button>
+      <button id="history-btn" class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition">
+        <span>📚</span><span class="hidden sm:inline">Historique</span>
+      </button>
+      <div class="flex-1"></div>
+      <div class="flex items-center gap-2 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2">
+        <span class="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">Modèle</span>
+        <select id="chat-model" class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer max-w-[180px]"></select>
+      </div>
     </header>
 
-    <!-- Zone de discussion -->
-    <main id="chat-box" class="flex-1 overflow-y-auto px-4 sm:px-6 py-8 space-y-6 max-w-4xl mx-auto w-full">
-        <div class="glass border border-slate-800/80 p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in">
-            <div class="absolute -top-12 -right-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-            <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2.5 flex items-center gap-2.5">
-                <span>🚀</span> Hub prêt à l'emploi
-            </h2>
-            <p class="text-slate-300 text-sm leading-relaxed mb-4">
-                Posez vos questions ou demandez du code. Si un serveur public met du temps à répondre, un système de secours sécurisé prend le relais instantanément.
-            </p>
-        </div>
-    </main>
+    <div id="chat-messages" class="flex-1 overflow-y-auto px-3 sm:px-6 py-6 space-y-5 min-h-0"></div>
 
-    <!-- Barre de saisie -->
-    <footer class="glass border-t border-slate-800/80 p-4 sm:p-5 sticky bottom-0 z-40 shadow-2xl">
-        <div class="max-w-4xl mx-auto w-full flex items-end gap-3 bg-slate-900/90 border border-slate-700/60 rounded-3xl p-3 shadow-2xl focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-500/20 transition duration-200">
-            <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none resize-none py-2.5 px-3 text-sm max-h-32" placeholder="Écrivez votre message ici..."></textarea>
-            
-            <button onclick="processUserRequest()" id="send-btn" class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold px-6 py-3 rounded-2xl transition-all duration-200 shadow-lg shadow-cyan-600/30 flex items-center justify-center text-sm active:scale-95">
-                Envoyer
-            </button>
+    <footer class="glass border-t border-slate-800/80 p-3 sm:p-4">
+      <div class="max-w-4xl mx-auto w-full">
+        <div id="attachment-preview" class="hidden mb-2"></div>
+        <div class="flex items-end gap-2 bg-slate-900/90 border border-slate-700/60 rounded-2xl p-2 shadow-2xl focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-500/20 transition">
+          <button id="attach-btn" title="Joindre une image" class="p-2.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-cyan-400 transition text-base flex-shrink-0">📎</button>
+          <input type="file" id="file-input" accept="image/*" class="hidden">
+          <textarea id="user-input" rows="1" class="flex-1 bg-transparent text-slate-100 placeholder-slate-500 focus:outline-none resize-none py-2.5 px-2 text-sm max-h-40 min-w-0" placeholder="Écrivez votre message... (Entrée = envoyer)"></textarea>
+          <button onclick="sendMessage()" id="send-btn" class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold px-4 sm:px-5 py-2.5 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-95 disabled:opacity-50 flex-shrink-0">
+            Envoyer
+          </button>
         </div>
+        <div class="text-[10.5px] text-slate-500 text-center mt-2">
+          Streaming en direct · Sauvegarde locale · Fallback automatique
+        </div>
+      </div>
     </footer>
+  </section>
 
-    <!-- Logique robuste -->
-    <script>
-        const tx = document.getElementById("user-input");
-        tx.addEventListener("input", function() {
-            this.style.height = "auto";
-            this.style.height = (Math.min(this.scrollHeight, 120)) + "px";
-        });
+  <!-- ============ IMAGE VIEW ============ -->
+  <section id="view-image" class="view flex-1 flex-col min-h-0">
+    <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3 flex-wrap">
+      <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎨</span> Générateur d'images</h2>
+      <div class="flex-1"></div>
+      <button id="img-download" disabled class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">⬇️ Télécharger</button>
+    </header>
 
-        function appendMessage(sender, content, isImage = false) {
-            const chatBox = document.getElementById('chat-box');
-            const msgDiv = document.createElement('div');
-            
-            if (sender === 'user') {
-                msgDiv.className = 'flex justify-end animate-fade-in';
-                msgDiv.innerHTML = `<div class="bg-cyan-600 text-white px-5 py-3.5 rounded-3xl rounded-tr-sm max-w-2xl shadow-xl text-sm whitespace-pre-wrap leading-relaxed font-medium">${content}</div>`;
-            } else {
-                msgDiv.className = 'flex justify-start animate-fade-in';
-                if(isImage) {
-                    msgDiv.innerHTML = `<div class="glass border border-slate-800 p-4 rounded-3xl rounded-tl-sm max-w-2xl shadow-2xl"><p class="text-xs font-bold text-cyan-400 mb-2 flex items-center gap-1.5"><span>🎨</span> Image générée</p><img src="${content}" alt="Image IA" class="rounded-2xl max-w-full h-auto border border-slate-700/80 shadow-lg"/></div>`;
-                } else {
-                    msgDiv.innerHTML = `<div class="glass border border-slate-800 px-6 py-5 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed whitespace-pre-wrap font-sans"><span class="block text-[11px] font-bold text-cyan-400 uppercase tracking-wider mb-1.5">Assistant Hub</span>${content}</div>`;
-                }
-            }
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+    <div class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+      <!-- Controls -->
+      <div class="w-full lg:w-80 flex-shrink-0 border-b lg:border-b-0 lg:border-r border-slate-800/80 overflow-y-auto p-4 space-y-4 max-h-[45vh] lg:max-h-none">
+        <div class="field">
+          <label>Prompt</label>
+          <textarea id="img-prompt" rows="4" class="input resize-none" placeholder="Un chat astronaute flottant dans une nébuleuse, ultra détaillé, cinématographique..."></textarea>
+        </div>
+        <div class="field">
+          <label>Modèle</label>
+          <select id="img-model" class="input"></select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="field">
+            <label>Largeur</label>
+            <select id="img-w" class="input">
+              <option>512</option><option>768</option><option selected>1024</option><option>1280</option><option>1536</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Hauteur</label>
+            <select id="img-h" class="input">
+              <option>512</option><option>768</option><option selected>1024</option><option>1280</option><option>1536</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Format</label>
+          <div class="flex flex-wrap gap-1.5" id="ratio-chips">
+            <span class="chip" data-w="1024" data-h="1024">◻️ 1:1</span>
+            <span class="chip" data-w="832"  data-h="1216">▯ 2:3</span>
+            <span class="chip" data-w="1216" data-h="832">▭ 3:2</span>
+            <span class="chip" data-w="768"  data-h="1344">📱 9:16</span>
+            <span class="chip" data-w="1344" data-h="768">🖥️ 16:9</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Style</label>
+          <div class="flex flex-wrap gap-1.5" id="style-chips">
+            <span class="chip active" data-style="">Aucun</span>
+            <span class="chip" data-style=", photographie réaliste, 8k, éclairage cinématographique">📷 Réaliste</span>
+            <span class="chip" data-style=", illustration numérique, art conceptuel, couleurs vibrantes">🎨 Digital</span>
+            <span class="chip" data-style=", anime japonais, studio ghibli, cell shading">🌸 Anime</span>
+            <span class="chip" data-style=", peinture à l'huile, style renaissance, texture de toile">🖼️ Peinture</span>
+            <span class="chip" data-style=", rendu 3D, blender, octane render, ultra détaillé">🧊 3D</span>
+            <span class="chip" data-style=", pixel art, 16 bits, rétro gaming">👾 Pixel</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Graine (optionnel)</label>
+          <input type="number" id="img-seed" class="input" placeholder="Aléatoire">
+        </div>
+        <button id="img-generate" class="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-[.98]">
+          ✨ Générer l'image
+        </button>
+      </div>
 
-        async function processUserRequest() {
-            const inputField = document.getElementById('user-input');
-            const prompt = inputField.value.trim();
-            const selectedModel = document.getElementById('model-select').value;
+      <!-- Preview -->
+      <div class="flex-1 overflow-y-auto p-4 min-w-0">
+        <div id="img-stage" class="min-h-[340px] rounded-2xl border border-dashed border-slate-700/80 flex items-center justify-center p-4 bg-gradient-to-b from-cyan-500/[.04] to-transparent relative overflow-hidden">
+          <div class="text-center text-slate-500 text-sm leading-relaxed">
+            <div class="text-4xl mb-3">🎨</div>
+            Décris ton image et clique sur <b class="text-slate-300">Générer</b><br>
+            <span class="text-xs">Gratuit · Illimité · Sans inscription</span>
+          </div>
+        </div>
 
-            if (!prompt) return;
+        <div id="img-gallery-wrap" class="hidden mt-6">
+          <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">Galerie de la session</h3>
+          <div id="img-gallery" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            appendMessage('user', prompt);
-            inputField.value = "";
-            inputField.style.height = "auto";
+  <!-- ============ VIDEO VIEW ============ -->
+  <section id="view-video" class="view flex-1 flex-col min-h-0">
+    <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3 flex-wrap">
+      <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎬</span> Générateur de vidéo</h2>
+      <div class="flex-1"></div>
+      <button id="vid-download" disabled class="flex items-center gap-1.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium px-3 py-2 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">⬇️ Télécharger WebM</button>
+    </header>
 
-            const sendBtn = document.getElementById('send-btn');
-            sendBtn.disabled = true;
-            sendBtn.innerText = "Génération...";
+    <div class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+      <div class="w-full lg:w-80 flex-shrink-0 border-b lg:border-b-0 lg:border-r border-slate-800/80 overflow-y-auto p-4 space-y-4 max-h-[45vh] lg:max-h-none">
+        <div class="field">
+          <label>Prompt</label>
+          <textarea id="vid-prompt" rows="4" class="input resize-none" placeholder="Voyage à travers une galaxie de cristal, mouvements fluides, néons..."></textarea>
+        </div>
+        <div class="field">
+          <label>Modèle d'image</label>
+          <select id="vid-model" class="input"></select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="field">
+            <label>Images</label>
+            <select id="vid-frames" class="input">
+              <option>6</option><option selected>10</option><option>14</option><option>20</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Durée (s)</label>
+            <select id="vid-duration" class="input">
+              <option>2</option><option selected>3</option><option>4</option><option>6</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="field">
+            <label>Largeur</label>
+            <select id="vid-w" class="input">
+              <option>512</option><option selected>768</option><option>1024</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Hauteur</label>
+            <select id="vid-h" class="input">
+              <option>512</option><option selected>768</option><option>1024</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Mouvement</label>
+          <div class="flex flex-wrap gap-1.5" id="motion-chips">
+            <span class="chip active" data-motion="1">🚶 Fluide</span>
+            <span class="chip" data-motion="2">🌀 Intense</span>
+            <span class="chip" data-motion="0.4">🧘 Subtil</span>
+          </div>
+        </div>
+        <button id="vid-generate" class="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-cyan-600/30 text-sm active:scale-[.98]">
+          🎬 Générer la vidéo
+        </button>
+        <p class="text-[11px] text-slate-500 leading-relaxed">
+          Génère plusieurs images puis les anime et les encode en WebM directement dans ton navigateur.
+        </p>
+      </div>
 
-            try {
-                // CAS 1 : GÉNÉRATION D'IMAGE
-                if (selectedModel === 'flux') {
-                    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-                    appendMessage('ia', imageUrl, true);
-                } 
-                // CAS 2 : TEXTE / CODE AVEC GESTION DE SECOURS ROBUSTE
-                else {
-                    let responseText = "";
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 8000); // Timeout de 8 secondes max
+      <div class="flex-1 overflow-y-auto p-4 min-w-0">
+        <div id="vid-stage" class="min-h-[340px] rounded-2xl border border-dashed border-slate-700/80 flex items-center justify-center p-4 bg-gradient-to-b from-indigo-500/[.04] to-transparent relative overflow-hidden">
+          <div class="text-center text-slate-500 text-sm leading-relaxed">
+            <div class="text-4xl mb-3">🎬</div>
+            Décris ta vidéo puis clique sur <b class="text-slate-300">Générer</b><br>
+            <span class="text-xs">Export WebM téléchargeable · 100% navigateur</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-                        const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=${selectedModel}`, {
-                            signal: controller.signal
-                        });
-                        clearTimeout(timeoutId);
+  <!-- ============ VOICE VIEW ============ -->
+  <section id="view-voice" class="view flex-1 flex-col min-h-0">
+    <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3">
+      <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>🎙️</span> Voix</h2>
+      <span class="text-[11px] text-slate-500">Web Speech API — dans le navigateur</span>
+    </header>
 
-                        if (res.ok) {
-                            responseText = await res.text();
-                        }
-                    } catch (netError) {
-                        console.warn("API principale occupée, bascule sur le mode secours.");
-                    }
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-5xl mx-auto">
 
-                    // Si le serveur public ne répond pas, on fournit une réponse de secours structurée et utile
-                    if (!responseText || responseText.length < 2) {
-                        responseText = `✨ [Mode de secours intelligent activé]\n\nLes serveurs publics ouverts subissent actuellement une forte affluence. Votre requête "${prompt}" a bien été enregistrée.\n\nEn attendant que le réseau public se libère, voici un aperçu de structure de code ou de réponse standardisée pour vous permettre d'avancer immédiatement :\n\n- **Sujet analysé** : ${prompt}\n- **Modèle sélectionné** : ${selectedModel}\n- **Conseil** : Réessayez dans 1 minute, ou actualisez la page si le trafic public persiste.`;
-                    }
+        <!-- STT -->
+        <div class="glass border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">🎙️ Reconnaissance vocale</h3>
+            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Dicte ton texte, il sera transcrit automatiquement.</p>
+          </div>
+          <button id="mic-btn" class="w-20 h-20 rounded-full bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 flex items-center justify-center text-3xl transition mx-auto active:scale-95">🎙️</button>
+          <div id="transcript" class="min-h-[90px] bg-black/30 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-300 leading-relaxed">Le texte reconnu apparaîtra ici…</div>
+          <button id="use-transcript" class="w-full bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-sm font-medium py-2.5 rounded-xl transition">
+            ➤ Envoyer au chat
+          </button>
+        </div>
 
-                    appendMessage('ia', responseText);
-                }
-            } catch (error) {
-                console.error(error);
-                appendMessage('ia', "⚠️ Une micro-coupure réseau est survenue. Veuillez réitérer votre demande dans un instant.");
-            } finally {
-                sendBtn.disabled = false;
-                sendBtn.innerText = "Envoyer";
-            }
-        }
-    </script>
+        <!-- TTS -->
+        <div class="glass border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">🔊 Synthèse vocale</h3>
+            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Fais lire n'importe quel texte à voix haute.</p>
+          </div>
+          <textarea id="tts-text" rows="4" class="input resize-none" placeholder="Texte à lire…"></textarea>
+          <div class="field">
+            <label>Voix</label>
+            <select id="tts-voice" class="input"></select>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="field">
+              <label>Vitesse</label>
+              <input type="number" id="tts-rate" value="1" min="0.5" max="2" step="0.1" class="input">
+            </div>
+            <div class="field">
+              <label>Tonalité</label>
+              <input type="number" id="tts-pitch" value="1" min="0" max="2" step="0.1" class="input">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="tts-speak" class="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold py-2.5 rounded-xl transition text-sm shadow-lg shadow-cyan-600/30">▶️ Lire</button>
+            <button id="tts-stop" class="bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 font-medium py-2.5 rounded-xl transition text-sm">⏹️ Stop</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS VIEW ============ -->
+  <section id="view-settings" class="view flex-1 flex-col min-h-0">
+    <header class="glass border-b border-slate-800/80 px-3 sm:px-4 py-3 flex items-center gap-3">
+      <h2 class="text-sm font-bold text-white flex items-center gap-2"><span>⚙️</span> Paramètres</h2>
+    </header>
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+      <div class="max-w-2xl mx-auto space-y-4">
+
+        <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-4">
+          <h3 class="text-sm font-bold text-white">Comportement par défaut</h3>
+          <div class="field">
+            <label>Modèle de chat par défaut</label>
+            <select id="set-text-model" class="input"></select>
+          </div>
+          <div class="field">
+            <label>Modèle d'image par défaut</label>
+            <select id="set-image-model" class="input"></select>
+          </div>
+          <div class="field">
+            <label>Prompt système</label>
+            <textarea id="set-system" rows="3" class="input resize-none" placeholder="Tu es un assistant IA utile, précis et concis."></textarea>
+          </div>
+        </div>
+
+        <div class="glass border border-slate-800/80 rounded-2xl p-5 space-y-3">
+          <h3 class="text-sm font-bold text-white">Données</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Tes conversations sont stockées localement dans ton navigateur. Rien n'est envoyé à un serveur.</p>
+          <div class="flex gap-2">
+            <button id="export-btn" class="flex-1 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-200 text-xs font-medium py-2.5 rounded-xl transition">⬇️ Exporter les conversations</button>
+            <button id="clear-all-btn" class="flex-1 bg-rose-900/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-200 text-xs font-medium py-2.5 rounded-xl transition">🗑️ Tout effacer</button>
+          </div>
+        </div>
+
+        <div class="glass border border-slate-800/80 rounded-2xl p-5 text-xs text-slate-400 leading-relaxed space-y-2">
+          <p class="font-bold text-slate-300">ℹ️ À propos</p>
+          <p>OpenSource AI Hub — interface entièrement gratuite, sans clé API, utilisant les API publiques de Pollinations AI et les Web APIs du navigateur (SpeechRecognition, SpeechSynthesis, MediaRecorder).</p>
+          <p>Les modèles cloud sont hébergés par des serveurs publics. Pour un usage intensif, privilégie des heures creuses.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==================== MODALS ==================== -->
+<div id="history-modal" class="modal-backdrop">
+  <div class="glass border border-slate-700/80 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in">
+    <div class="flex items-center justify-between p-4 border-b border-slate-800/80">
+      <h3 class="text-sm font-bold text-white">📚 Historique des conversations</h3>
+      <button onclick="closeHistory()" class="text-slate-400 hover:text-white text-xl px-2 leading-none">×</button>
+    </div>
+    <div id="history-list" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+  </div>
+</div>
+
+<div id="toasts" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ==================== SCRIPT ==================== -->
+<script>
+/* ============================================================
+   CONSTANTES — modèles gratuits
+   ============================================================ */
+const TEXT_MODELS = [
+  { id:'openai',        name:'GPT-4o mini (OpenAI)' },
+  { id:'openai-fast',   name:'OpenAI Fast ⚡' },
+  { id:'openai-large',  name:'OpenAI Large 🧠' },
+  { id:'mistral',       name:'Mistral 7B 🇪🇺' },
+  { id:'llama',         name:'Llama 3' },
+  { id:'qwen-coder',    name:'Qwen Coder 💻' },
+  { id:'deepseek',      name:'DeepSeek R1' },
+  { id:'deepseek-r1',   name:'DeepSeek Reasoning' },
+  { id:'phi',           name:'Phi-4' },
+  { id:'gemini',        name:'Gemini 2.0 Flash' },
+  { id:'gemini-fast',   name:'Gemini Flash ⚡' },
+  { id:'nova-fast',     name:'Nova Fast' },
+];
+
+const IMAGE_MODELS = [
+  { id:'flux',         name:'FLUX — haute qualité' },
+  { id:'turbo',        name:'Turbo — ultra rapide ⚡' },
+  { id:'kontext',      name:'Kontext — créatif' },
+  { id:'flux-realism', name:'FLUX Realism 📷' },
+  { id:'flux-anime',   name:'FLUX Anime 🌸' },
+  { id:'flux-3d',      name:'FLUX 3D 🧊' },
+];
+
+const STORAGE_KEY = 'opensource_ai_hub_v2';
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  view: 'chat',
+  conversations: [],
+  currentId: null,
+  busy: false,
+  imgStyle: '',
+  lastImage: null,
+  lastVideoBlob: null,
+  motion: 1,
+  attachment: null, // {dataUrl, name}
+  settings: {
+    textModel: 'openai',
+    imageModel: 'flux',
+    systemPrompt: "Tu es un assistant IA utile, précis et concis. Réponds en français par défaut. Utilise du markdown quand c'est pertinent."
+  }
+};
+
+/* ============================================================
+   UTILITAIRES
+   ============================================================ */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+function toast(msg, type = ''){
+  const colors = {
+    '':   'border-l-cyan-500',
+    ok:   'border-l-emerald-500',
+    err:  'border-l-rose-500',
+    warn: 'border-l-amber-500',
+  };
+  const el = document.createElement('div');
+  el.className = `pointer-events-auto glass border border-slate-700/70 border-l-4 ${colors[type] || colors['']} rounded-xl px-4 py-3 text-sm text-slate-100 shadow-2xl animate-slide-in max-w-sm`;
+  el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .3s, transform .3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(30px)';
+    setTimeout(() => el.remove(), 320);
+  }, 3600);
+}
+
+function escapeHTML(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function uid(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function renderMarkdown(text){
+  let h = escapeHTML(text);
+
+  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
+    `<pre><code>${code.replace(/\n$/,'')}</code></pre>`);
+
+  h = h.replace(/`([^`\n]+)`/g, '<code class="inline-code">$1</code>');
+
+  h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  h = h.replace(/^## (.+)$/gm,  '<h2>$1</h2>');
+  h = h.replace(/^# (.+)$/gm,   '<h1>$1</h1>');
+
+  h = h.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  h = h.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+
+  h = h.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  h = h.replace(/^\s*[-*] (.+)$/gm, '<li>$1</li>');
+  h = h.replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g, '<ul>$1</ul>');
+
+  h = h.split(/\n{2,}/).map(block => {
+    if (/^\s*<(ul|ol|pre|h[1-3]|li)/.test(block)) return block;
+    return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
+  }).join('');
+
+  return h;
+}
+
+/* ============================================================
+   PERSISTANCE
+   ============================================================ */
+function saveState(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      conversations: state.conversations,
+      currentId: state.currentId,
+      settings: state.settings
+    }));
+  } catch(e){ console.warn('save failed', e); }
+}
+
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.conversations)) state.conversations = data.conversations;
+    if (data.currentId) state.currentId = data.currentId;
+    if (data.settings) state.settings = { ...state.settings, ...data.settings };
+  } catch(e){ console.warn('load failed', e); }
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+$$('#nav .nav-item, aside .nav-item').forEach(item => {
+  item.addEventListener('click', () => switchView(item.dataset.view));
+});
+
+function switchView(name){
+  state.view = name;
+  $$('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.view === name));
+  $$('.view').forEach(el => el.classList.remove('active'));
+  const v = document.getElementById('view-' + name);
+  if (v) v.classList.add('active');
+}
+
+/* ============================================================
+   CHAT — GESTION DES CONVERSATIONS
+   ============================================================ */
+function newConversation(){
+  const conv = {
+    id: uid(),
+    title: 'Nouvelle conversation',
+    messages: [],
+    createdAt: Date.now()
+  };
+  state.conversations.unshift(conv);
+  state.currentId = conv.id;
+  saveState();
+  renderChat();
+}
+
+function getCurrent(){
+  return state.conversations.find(c => c.id === state.currentId);
+}
+
+function selectConversation(id){
+  state.currentId = id;
+  saveState();
+  closeHistory();
+  renderChat();
+}
+
+function deleteConversation(id, ev){
+  ev && ev.stopPropagation();
+  state.conversations = state.conversations.filter(c => c.id !== id);
+  if (state.currentId === id){
+    state.currentId = state.conversations[0]?.id || null;
+  }
+  if (!state.currentId) newConversation();
+  else { saveState(); renderChat(); renderHistoryList(); }
+}
+
+function renderHistoryList(){
+  const list = $('#history-list');
+  if (!list) return;
+  if (!state.conversations.length){
+    list.innerHTML = `<div class="text-center text-slate-500 text-sm py-8">Aucune conversation enregistrée.</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  state.conversations.forEach(c => {
+    const el = document.createElement('div');
+    el.className = `group flex items-center gap-3 p-3 rounded-xl cursor-pointer border transition ${c.id === state.currentId ? 'bg-cyan-500/10 border-cyan-500/40' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}`;
+    const date = new Date(c.createdAt).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    el.innerHTML = `
+      <div class="flex-1 min-w-0">
+        <div class="text-sm text-slate-200 font-medium truncate">${escapeHTML(c.title)}</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">${date} · ${c.messages.length} messages</div>
+      </div>
+      <button class="text-slate-500 hover:text-rose-400 text-lg px-2 opacity-0 group-hover:opacity-100 transition" title="Supprimer">×</button>
+    `;
+    el.addEventListener('click', () => selectConversation(c.id));
+    el.querySelector('button').addEventListener('click', e => deleteConversation(c.id, e));
+    list.appendChild(el);
+  });
+}
+
+function openHistory(){
+  renderHistoryList();
+  $('#history-modal').classList.add('show');
+}
+function closeHistory(){
+  $('#history-modal').classList.remove('show');
+}
+
+/* ============================================================
+   CHAT — RENDU DES MESSAGES
+   ============================================================ */
+function renderChat(){
+  const box = $('#chat-messages');
+  box.innerHTML = '';
+  const conv = getCurrent();
+
+  if (!conv || !conv.messages.length){
+    box.innerHTML = `
+      <div class="glass border border-slate-800/80 p-6 sm:p-8 rounded-3xl shadow-2xl relative overflow-hidden animate-fade-in max-w-3xl mx-auto">
+        <div class="absolute -top-12 -right-12 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2.5 flex items-center gap-2.5">
+          <span>🚀</span> Hub prêt à l'emploi
+        </h2>
+        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+          Posez vos questions, demandez du code, des images, des vidéos ou utilisez la voix.
+        </p>
+        <ul class="text-slate-400 text-xs space-y-1.5 leading-relaxed">
+          <li>• 💬 <b class="text-slate-300">Chat</b> — streaming en direct, 12 modèles, sauvegarde locale</li>
+          <li>• 🎨 <b class="text-slate-300">Image</b> — FLUX, Turbo, Kontext + galerie</li>
+          <li>• 🎬 <b class="text-slate-300">Vidéo</b> — génération + export WebM</li>
+          <li>• 🎙️ <b class="text-slate-300">Voix</b> — dictée et synthèse vocale</li>
+        </ul>
+        <p class="text-slate-500 text-[11px] mt-4">💡 Astuce : Entrée pour envoyer, Maj+Entrée pour un retour à la ligne.</p>
+      </div>
+    `;
+    return;
+  }
+
+  conv.messages.forEach(m => appendMessageEl(m.role, m.content, m.image));
+  box.scrollTop = box.scrollHeight;
+}
+
+function appendMessageEl(role, content, imageDataUrl){
+  const box = $('#chat-messages');
+  const wrap = document.createElement('div');
+
+  if (role === 'user'){
+    wrap.className = 'flex justify-end animate-fade-in';
+    let imgHtml = '';
+    if (imageDataUrl){
+      imgHtml = `<img src="${imageDataUrl}" class="rounded-xl max-w-full mb-2 border border-slate-700/60" />`;
+    }
+    wrap.innerHTML = `
+      <div class="bg-gradient-to-br from-cyan-600 to-indigo-600 text-white px-5 py-3.5 rounded-3xl rounded-tr-sm max-w-2xl shadow-xl text-sm whitespace-pre-wrap leading-relaxed font-medium">
+        ${imgHtml}${escapeHTML(content)}
+      </div>`;
+  } else {
+    wrap.className = 'flex justify-start animate-fade-in';
+    wrap.innerHTML = `
+      <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed msg-md min-w-0 break-words">
+        <span class="block text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Assistant Hub</span>
+        <div class="content"></div>
+        <div class="actions mt-3 flex gap-1 opacity-0 transition-opacity"></div>
+      </div>`;
+    wrap.querySelector('.content').innerHTML = renderMarkdown(content);
+    const acts = wrap.querySelector('.actions');
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
+    copyBtn.textContent = '📋 Copier';
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(content);
+      toast('Copié !', 'ok');
+    });
+    acts.appendChild(copyBtn);
+    wrap.addEventListener('mouseenter', () => acts.style.opacity = '1');
+    wrap.addEventListener('mouseleave', () => acts.style.opacity = '0');
+  }
+
+  box.appendChild(wrap);
+  box.scrollTop = box.scrollHeight;
+  return wrap;
+}
+
+/* ============================================================
+   CHAT — ENVOI + STREAMING
+   ============================================================ */
+const promptInput = $('#user-input');
+const sendBtn = $('#send-btn');
+
+function autoResize(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+promptInput.addEventListener('input', () => autoResize(promptInput));
+promptInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+});
+
+$('#new-chat-btn').addEventListener('click', newConversation);
+$('#history-btn').addEventListener('click', openHistory);
+
+/* Attachment */
+$('#attach-btn').addEventListener('click', () => $('#file-input').click());
+$('#file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 4 * 1024 * 1024){ toast('Image trop lourde (max 4 Mo)', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.attachment = { dataUrl: ev.target.result, name: file.name };
+    renderAttachmentPreview();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+function renderAttachmentPreview(){
+  const box = $('#attachment-preview');
+  if (!state.attachment){
+    box.classList.add('hidden');
+    box.innerHTML = '';
+    return;
+  }
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="flex items-center gap-3 bg-slate-900/70 border border-slate-800 rounded-xl p-2 max-w-fit">
+      <img src="${state.attachment.dataUrl}" class="w-12 h-12 rounded-lg object-cover border border-slate-700" />
+      <span class="text-xs text-slate-400 max-w-[180px] truncate">${escapeHTML(state.attachment.name)}</span>
+      <button id="remove-attachment" class="text-slate-500 hover:text-rose-400 px-2 text-lg leading-none">×</button>
+    </div>`;
+  $('#remove-attachment').addEventListener('click', () => {
+    state.attachment = null;
+    renderAttachmentPreview();
+  });
+}
+
+async function* streamChat(messages, model){
+  const res = await fetch('https://text.pollinations.ai/openai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages,
+      stream: true,
+      private: true,
+      referrer: 'opensource-ai-hub'
+    })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+  while (true){
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines){
+      const t = line.trim();
+      if (!t.startsWith('data:')) continue;
+      const data = t.slice(5).trim();
+      if (data === '[DONE]') return;
+      try {
+        const j = JSON.parse(data);
+        const c = j.choices?.[0]?.delta?.content;
+        if (c) yield c;
+      } catch(_){}
+    }
+  }
+}
+
+async function fallbackChat(messages, model){
+  const last = messages[messages.length - 1];
+  const prompt = last?.content || '';
+  const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}?model=${model}`);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.text();
+}
+
+async function sendMessage(){
+  const text = promptInput.value.trim();
+  if ((!text && !state.attachment) || state.busy) return;
+
+  if (!getCurrent()) newConversation();
+  const conv = getCurrent();
+
+  const userMsg = {
+    role: 'user',
+    content: text || '(image jointe)',
+    image: state.attachment?.dataUrl || null
+  };
+  conv.messages.push(userMsg);
+
+  // titre automatique
+  if (conv.title === 'Nouvelle conversation'){
+    conv.title = (text || 'Image').slice(0, 50) + ((text || '').length > 50 ? '…' : '');
+  }
+
+  appendMessageEl('user', userMsg.content, userMsg.image);
+
+  promptInput.value = '';
+  autoResize(promptInput);
+  state.attachment = null;
+  renderAttachmentPreview();
+
+  state.busy = true;
+  sendBtn.disabled = true;
+
+  // Message bot en cours
+  const botWrap = document.createElement('div');
+  botWrap.className = 'flex justify-start animate-fade-in';
+  botWrap.innerHTML = `
+    <div class="glass border border-slate-800 px-5 py-4 rounded-3xl rounded-tl-sm max-w-3xl shadow-2xl text-slate-200 text-sm leading-relaxed msg-md min-w-0 break-words w-full">
+      <span class="block text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Assistant Hub</span>
+      <div class="content"><div class="flex gap-1.5 py-1"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+    </div>`;
+  $('#chat-messages').appendChild(botWrap);
+  $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
+
+  const contentEl = botWrap.querySelector('.content');
+  const model = $('#chat-model').value;
+  const sys = state.settings.systemPrompt;
+
+  const apiMessages = [
+    ...(sys ? [{ role: 'system', content: sys }] : []),
+    ...conv.messages.map(m => ({ role: m.role, content: m.content }))
+  ];
+
+  let full = '';
+  let firstChunk = true;
+
+  try {
+    for await (const chunk of streamChat(apiMessages, model)){
+      if (firstChunk){ contentEl.innerHTML = ''; firstChunk = false; }
+      full += chunk;
+      contentEl.innerHTML = renderMarkdown(full) + '<span class="cursor-blink"></span>';
+      $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
+    }
+  } catch(err){
+    console.warn('Streaming échoué, fallback non-streaming', err);
+    try {
+      full = await fallbackChat(apiMessages, model);
+    } catch(err2){
+      full = "⚠️ Une micro-coupure réseau est survenue. Réessaie dans un instant.";
+      toast('Erreur réseau', 'err');
+    }
+  }
+
+  if (!full) full = '*(réponse vide)*';
+
+  contentEl.innerHTML = renderMarkdown(full);
+
+  // actions
+  const acts = document.createElement('div');
+  acts.className = 'actions mt-3 flex gap-1 opacity-0 transition-opacity';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
+  copyBtn.textContent = '📋 Copier';
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(full);
+    toast('Copié !', 'ok');
+  });
+  const regenBtn = document.createElement('button');
+  regenBtn.className = 'text-[11px] text-slate-500 hover:text-cyan-400 px-2 py-1 rounded-lg hover:bg-slate-800/60 transition';
+  regenBtn.textContent = '🔄 Régénérer';
+  regenBtn.addEventListener('click', () => regenerate());
+  acts.append(copyBtn, regenBtn);
+  botWrap.querySelector('.glass').appendChild(acts);
+  botWrap.addEventListener('mouseenter', () => acts.style.opacity = '1');
+  botWrap.addEventListener('mouseleave', () => acts.style.opacity = '0');
+
+  conv.messages.push({ role: 'assistant', content: full });
+  saveState();
+
+  state.busy = false;
+  sendBtn.disabled = false;
+  promptInput.focus();
+}
+
+function regenerate(){
+  const conv = getCurrent();
+  if (!conv || state.busy) return;
+  // retire le dernier assistant
+  if (conv.messages[conv.messages.length - 1]?.role === 'assistant') conv.messages.pop();
+  // retire le dernier user pour le renvoyer
+  const lastUser = conv.messages[conv.messages.length - 1];
+  if (!lastUser || lastUser.role !== 'user') return;
+  conv.messages.pop();
+  saveState();
+  renderChat();
+  promptInput.value = lastUser.content;
+  state.attachment = lastUser.image ? { dataUrl: lastUser.image, name: 'image' } : null;
+  renderAttachmentPreview();
+  sendMessage();
+}
+
+/* ============================================================
+   IMAGE
+   ============================================================ */
+function fillImageSelects(){
+  const targets = ['#img-model', '#vid-model', '#set-image-model'];
+  targets.forEach(sel => {
+    const el = $(sel);
+    if (!el) return;
+    el.innerHTML = '';
+    IMAGE_MODELS.forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.id;
+      o.textContent = m.name;
+      el.appendChild(o);
+    });
+  });
+  $('#img-model').value = state.settings.imageModel;
+  $('#vid-model').value = 'turbo';
+  $('#set-image-model').value = state.settings.imageModel;
+}
+
+function buildImageURL(prompt, { width, height, seed, model }){
+  const p = encodeURIComponent(prompt);
+  const s = seed ?? Math.floor(Math.random() * 1e9);
+  return `https://image.pollinations.ai/prompt/${p}?width=${width}&height=${height}&seed=${s}&model=${model}&nologo=true&referrer=opensource-ai-hub`;
+}
+
+function loadImage(url){
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.crossOrigin = 'anonymous';
+    im.onload = () => resolve(im);
+    im.onerror = () => reject(new Error('Échec du chargement de l\'image'));
+    im.src = url;
+  });
+}
+
+$$('#ratio-chips .chip').forEach(c => c.addEventListener('click', () => {
+  $$('#ratio-chips .chip').forEach(x => x.classList.remove('active'));
+  c.classList.add('active');
+  $('#img-w').value = c.dataset.w;
+  $('#img-h').value = c.dataset.h;
+}));
+
+$$('#style-chips .chip').forEach(c => c.addEventListener('click', () => {
+  $$('#style-chips .chip').forEach(x => x.classList.remove('active'));
+  c.classList.add('active');
+  state.imgStyle = c.dataset.style || '';
+}));
+
+$('#img-generate').addEventListener('click', generateImage);
+
+async function generateImage(){
+  const raw = $('#img-prompt').value.trim();
+  if (!raw){ toast('Décris ton image !', 'err'); return; }
+
+  const prompt = raw + state.imgStyle;
+  const w = +$('#img-w').value;
+  const h = +$('#img-h').value;
+  const seedVal = $('#img-seed').value.trim();
+  const model = $('#img-model').value;
+
+  const stage = $('#img-stage');
+  const btn = $('#img-generate');
+  btn.disabled = true;
+  $('#img-download').disabled = true;
+
+  stage.innerHTML = `
+    <div class="text-center">
+      <div class="w-11 h-11 rounded-full border-[3px] border-slate-700 border-t-cyan-500 spin mx-auto mb-3"></div>
+      <div class="text-slate-400 text-sm">Génération en cours…</div>
+    </div>
+    <div class="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all" id="img-progress" style="width:0%"></div>`;
+
+  let pct = 0;
+  const bar = $('#img-progress');
+  const timer = setInterval(() => {
+    pct = Math.min(pct + Math.random() * 9, 92);
+    if (bar) bar.style.width = pct + '%';
+  }, 320);
+
+  try {
+    const url = buildImageURL(prompt, {
+      width: w, height: h, model,
+      seed: seedVal ? +seedVal : undefined
+    });
+    const im = await loadImage(url);
+    clearInterval(timer);
+
+    stage.innerHTML = '';
+    stage.appendChild(im);
+    state.lastImage = { url, prompt, w, h, model };
+    $('#img-download').disabled = false;
+
+    // galerie
+    $('#img-gallery-wrap').classList.remove('hidden');
+    const g = document.createElement('img');
+    g.src = url;
+    g.title = prompt;
+    g.className = 'w-full aspect-square object-cover rounded-lg border border-slate-800 cursor-pointer hover:scale-105 hover:border-cyan-500/50 transition';
+    g.addEventListener('click', () => {
+      stage.innerHTML = '';
+      const big = new Image();
+      big.crossOrigin = 'anonymous';
+      big.src = url;
+      big.style.maxWidth = '100%';
+      big.style.borderRadius = '12px';
+      stage.appendChild(big);
+      state.lastImage = { url, prompt, w, h, model };
+      $('#img-download').disabled = false;
+    });
+    $('#img-gallery').prepend(g);
+
+    toast('Image générée ✨', 'ok');
+  } catch(err){
+    clearInterval(timer);
+    stage.innerHTML = `<div class="text-center text-rose-400 text-sm">⚠️ ${escapeHTML(err.message)}</div>`;
+    toast('Erreur de génération', 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+$('#img-download').addEventListener('click', () => {
+  if (!state.lastImage) return;
+  const a = document.createElement('a');
+  a.href = state.lastImage.url;
+  a.download = 'nexus-' + Date.now() + '.jpg';
+  a.target = '_blank';
+  a.click();
+  toast('Téléchargement lancé', 'ok');
+});
+
+/* ============================================================
+   VIDÉO
+   ============================================================ */
+$$('#motion-chips .chip').forEach(c => c.addEventListener('click', () => {
+  $$('#motion-chips .chip').forEach(x => x.classList.remove('active'));
+  c.classList.add('active');
+  state.motion = +c.dataset.motion;
+}));
+
+$('#vid-generate').addEventListener('click', generateVideo);
+
+function drawZoomed(ctx, img, w, h, zoom){
+  const ir = img.width / img.height;
+  const cr = w / h;
+  let dw, dh;
+  if (ir > cr){ dh = h; dw = h * ir; } else { dw = w; dh = w / ir; }
+  dw *= zoom; dh *= zoom;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+}
+
+async function generateVideo(){
+  const prompt = $('#vid-prompt').value.trim();
+  if (!prompt){ toast('Décris ta vidéo !', 'err'); return; }
+
+  const nFrames = +$('#vid-frames').value;
+  const duration = +$('#vid-duration').value;
+  const w = +$('#vid-w').value;
+  const h = +$('#vid-h').value;
+  const model = $('#vid-model').value;
+  const motion = state.motion;
+
+  const stage = $('#vid-stage');
+  const btn = $('#vid-generate');
+  btn.disabled = true;
+  $('#vid-download').disabled = true;
+
+  stage.innerHTML = `
+    <div class="text-center">
+      <div class="w-11 h-11 rounded-full border-[3px] border-slate-700 border-t-cyan-500 spin mx-auto mb-3"></div>
+      <div class="text-slate-400 text-sm" id="vid-status">Génération des images… 0/${nFrames}</div>
+    </div>
+    <div class="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all" id="vid-progress" style="width:0%"></div>`;
+
+  const bar = $('#vid-progress');
+  const status = $('#vid-status');
+
+  try {
+    const images = [];
+    const baseSeed = Math.floor(Math.random() * 100000);
+
+    for (let i = 0; i < nFrames; i++){
+      const seed = baseSeed + i * 137;
+      const url = buildImageURL(prompt, { width: w, height: h, seed, model });
+      const im = await loadImage(url);
+      images.push(im);
+      if (bar) bar.style.width = ((i + 1) / nFrames * 55) + '%';
+      if (status) status.textContent = `Génération des images… ${i+1}/${nFrames}`;
+    }
+
+    if (status) status.textContent = 'Animation et encodage…';
+    if (bar) bar.style.width = '70%';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+
+    const fps = 30;
+    const totalFrames = duration * fps;
+    const perImage = totalFrames / nFrames;
+
+    const stream = canvas.captureStream(fps);
+    let mime = 'video/webm;codecs=vp9';
+    if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm;codecs=vp8';
+    if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+
+    const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6_000_000 });
+    const chunks = [];
+    rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    const done = new Promise(res => rec.onstop = res);
+
+    stage.innerHTML = '';
+    canvas.style.maxWidth = '100%';
+    canvas.style.borderRadius = '12px';
+    stage.appendChild(canvas);
+    const bar2 = document.createElement('div');
+    bar2.className = 'absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all';
+    bar2.style.width = '70%';
+    stage.appendChild(bar2);
+
+    rec.start(100);
+
+    for (let f = 0; f < totalFrames; f++){
+      const t = f / perImage;
+      const idx = Math.min(Math.floor(t), nFrames - 1);
+      const nxt = Math.min(idx + 1, nFrames - 1);
+      const alpha = Math.min(t - idx, 1);
+      const zoom = 1 + 0.05 * motion * (f / totalFrames);
+
+      ctx.save();
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalAlpha = 1;
+      drawZoomed(ctx, images[idx], w, h, zoom);
+      if (alpha > 0 && nxt !== idx){
+        ctx.globalAlpha = alpha;
+        drawZoomed(ctx, images[nxt], w, h, zoom);
+      }
+      ctx.restore();
+
+      bar2.style.width = (70 + (f / totalFrames) * 30) + '%';
+      await new Promise(r => setTimeout(r, 1000 / fps));
+    }
+
+    rec.stop();
+    await done;
+
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    state.lastVideoBlob = blob;
+
+    const video = document.createElement('video');
+    video.src = URL.createObjectURL(blob);
+    video.controls = true;
+    video.autoplay = true;
+    video.loop = true;
+    video.style.maxWidth = '100%';
+    video.style.borderRadius = '12px';
+
+    stage.innerHTML = '';
+    stage.appendChild(video);
+    $('#vid-download').disabled = false;
+
+    toast('Vidéo générée 🎬', 'ok');
+  } catch(err){
+    console.error(err);
+    stage.innerHTML = `<div class="text-center text-rose-400 text-sm">⚠️ ${escapeHTML(err.message)}</div>`;
+    toast('Erreur vidéo : ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+$('#vid-download').addEventListener('click', () => {
+  if (!state.lastVideoBlob) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(state.lastVideoBlob);
+  a.download = 'nexus-video-' + Date.now() + '.webm';
+  a.click();
+  toast('Téléchargement lancé', 'ok');
+});
+
+/* ============================================================
+   VOIX
+   ============================================================ */
+const micBtn = $('#mic-btn');
+const transcriptEl = $('#transcript');
+let recognition = null;
+let recording = false;
+let finalText = '';
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'fr-FR';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++){
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalText += t + ' ';
+      else interim += t;
+    }
+    transcriptEl.textContent = (finalText + interim).trim() || '…';
+  };
+  recognition.onerror = e => {
+    toast('Erreur micro : ' + e.error, 'err');
+    stopRec();
+  };
+  recognition.onend = () => { if (recording) recognition.start(); };
+} else {
+  micBtn.disabled = true;
+  transcriptEl.textContent = "Reconnaissance vocale non supportée par ce navigateur.";
+}
+
+function stopRec(){
+  recording = false;
+  micBtn.classList.remove('pulse-rec');
+  micBtn.style.background = '';
+  micBtn.textContent = '🎙️';
+  if (recognition) try { recognition.stop(); } catch(_){}
+}
+
+micBtn.addEventListener('click', () => {
+  if (!recognition){ toast('Non supporté', 'err'); return; }
+  if (recording){ stopRec(); return; }
+  recording = true;
+  finalText = '';
+  transcriptEl.textContent = '…';
+  micBtn.classList.add('pulse-rec');
+  micBtn.style.background = 'linear-gradient(135deg, #f87171, #dc2626)';
+  micBtn.textContent = '⏹️';
+  try { recognition.start(); } catch(_){}
+  toast('Écoute en cours…', 'ok');
+});
+
+$('#use-transcript').addEventListener('click', () => {
+  const txt = transcriptEl.textContent.trim();
+  if (!txt || txt === '…'){ toast('Rien à envoyer', 'err'); return; }
+  switchView('chat');
+  promptInput.value = txt;
+  autoResize(promptInput);
+  promptInput.focus();
+  toast('Texte transféré au chat', 'ok');
+});
+
+/* TTS */
+const ttsVoiceSel = $('#tts-voice');
+let voices = [];
+
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  ttsVoiceSel.innerHTML = '';
+  voices.forEach((v, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = `${v.name} (${v.lang})`;
+    if (v.lang.startsWith('fr')) o.selected = true;
+    ttsVoiceSel.appendChild(o);
+  });
+}
+loadVoices();
+speechSynthesis.onvoiceschanged = loadVoices;
+
+$('#tts-speak').addEventListener('click', () => {
+  const text = $('#tts-text').value.trim();
+  if (!text){ toast('Écris un texte à lire', 'err'); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices[+ttsVoiceSel.value];
+  if (v) u.voice = v;
+  u.rate = +$('#tts-rate').value;
+  u.pitch = +$('#tts-pitch').value;
+  speechSynthesis.speak(u);
+  toast('Lecture en cours…', 'ok');
+});
+$('#tts-stop').addEventListener('click', () => speechSynthesis.cancel());
+
+/* ============================================================
+   PARAMÈTRES
+   ============================================================ */
+function fillSettingsSelects(){
+  const tSel = $('#set-text-model');
+  tSel.innerHTML = '';
+  TEXT_MODELS.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id; o.textContent = m.name;
+    tSel.appendChild(o);
+  });
+  tSel.value = state.settings.textModel;
+
+  $('#set-system').value = state.settings.systemPrompt;
+
+  tSel.addEventListener('change', () => {
+    state.settings.textModel = tSel.value;
+    $('#chat-model').value = tSel.value;
+    saveState();
+    toast('Modèle par défaut mis à jour', 'ok');
+  });
+  $('#set-image-model').addEventListener('change', e => {
+    state.settings.imageModel = e.target.value;
+    $('#img-model').value = e.target.value;
+    saveState();
+    toast('Modèle image mis à jour', 'ok');
+  });
+  $('#set-system').addEventListener('input', e => {
+    state.settings.systemPrompt = e.target.value;
+    saveState();
+  });
+}
+
+$('#export-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state.conversations, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'opensource-ai-hub-conversations-' + Date.now() + '.json';
+  a.click();
+  toast('Export lancé', 'ok');
+});
+
+$('#clear-all-btn').addEventListener('click', () => {
+  if (!confirm('Effacer toutes les conversations et réinitialiser les paramètres ?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state.conversations = [];
+  state.currentId = null;
+  state.settings = {
+    textModel: 'openai',
+    imageModel: 'flux',
+    systemPrompt: "Tu es un assistant IA utile, précis et concis. Réponds en français par défaut."
+  };
+  newConversation();
+  fillModelSelect();
+  fillImageSelects();
+  fillSettingsSelects();
+  toast('Tout a été effacé', 'ok');
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function fillModelSelect(){
+  const sel = $('#chat-model');
+  sel.innerHTML = '';
+  TEXT_MODELS.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id;
+    o.textContent = m.name;
+    sel.appendChild(o);
+  });
+  sel.value = state.settings.textModel;
+  sel.addEventListener('change', () => {
+    state.settings.textModel = sel.value;
+    saveState();
+  });
+}
+
+function init(){
+  loadState();
+
+  fillModelSelect();
+  fillImageSelects();
+  fillSettingsSelects();
+
+  // Première conversation
+  if (!state.conversations.length){
+    newConversation();
+  } else if (!state.currentId || !state.conversations.find(c => c.id === state.currentId)){
+    state.currentId = state.conversations[0].id;
+  }
+  renderChat();
+
+  // Fermeture des modales en cliquant sur le fond
+  $('#history-modal').addEventListener('click', e => {
+    if (e.target === $('#history-modal')) closeHistory();
+  });
+
+  // Focus initial
+  promptInput.focus();
+}
+
+init();
+console.log('%c⚡ OpenSource AI Hub Pro', 'font-size:18px;font-weight:bold;color:#06b6d4');
+console.log('%c100% gratuit — aucune clé API requise', 'color:#34d399');
+</script>
 </body>
 </html>
